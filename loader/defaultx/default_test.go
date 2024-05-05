@@ -43,7 +43,7 @@ func TestLoader_Load(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			l := New()
-			if err := l.Load(context.Background(), tt.args.to, tt.args.opts...); (err != nil) != tt.wantErr {
+			if err := l.LoadChu(context.Background(), tt.args.to, tt.args.opts...); (err != nil) != tt.wantErr {
 				t.Errorf("Loader.Load() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

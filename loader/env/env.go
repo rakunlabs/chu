@@ -39,7 +39,11 @@ func New(opts ...Option) *Loader {
 // Load loads the configuration from the environment.
 //   - to must be a pointer to a struct
 //   - only struct fields load values
-func (l Loader) Load(ctx context.Context, to any, opts ...loader.Option) error {
+func (l Loader) Load(ctx context.Context, to any) error {
+	return l.LoadChu(ctx, to)
+}
+
+func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
 	v := reflect.ValueOf(to)
 	if v.Kind() != reflect.Ptr {
 		return errors.New("env: value is not a pointer")

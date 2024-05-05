@@ -1,17 +1,19 @@
 package file
 
 import (
-	"github.com/rakunlabs/chu/loader/mapx"
+	"github.com/rakunlabs/chu/loader"
 )
 
 type Option func(*option)
 
 type option struct {
-	Mapx           *mapx.Loader
-	FileSuffix     []string
-	EtcFolderCheck bool
-	Name           string
-	Decoders       map[string]Decoder
+	Hooks                 []loader.HookFunc
+	WeaklyIgnoreSeperator bool
+	WeaklyDashUnderscore  bool
+	FileSuffix            []string
+	EtcFolderCheck        bool
+	Name                  string
+	Decoders              map[string]Decoder
 }
 
 func (o *option) apply(opts ...Option) {
@@ -20,9 +22,26 @@ func (o *option) apply(opts ...Option) {
 	}
 }
 
-func WithMapxLoader(m *mapx.Loader) Option {
+// WithHooks sets the hooks for map to struct conversion.
+func WithHooks(hooks ...loader.HookFunc) Option {
 	return func(o *option) {
-		o.Mapx = m
+		o.Hooks = hooks
+	}
+}
+
+// WithWeaklyIgnoreSeperator sets the weakly ignore separator option.
+//   - default is true
+func WithWeaklyIgnoreSeperator(v bool) Option {
+	return func(o *option) {
+		o.WeaklyIgnoreSeperator = v
+	}
+}
+
+// WithWeaklyDashUnderscore sets the weakly dash underscore option.
+//   - default is true
+func WithWeaklyDashUnderscore(v bool) Option {
+	return func(o *option) {
+		o.WeaklyDashUnderscore = v
 	}
 }
 

@@ -52,7 +52,7 @@ func TestLoader_Load(t *testing.T) {
 
 			t.Setenv("CONFIG_PATH", "testdata/config.yaml")
 
-			if err := l.Load(tt.args.ctx, tt.args.to, tt.args.opts...); (err != nil) != tt.wantErr {
+			if err := l.LoadChu(tt.args.ctx, tt.args.to, tt.args.opts...); (err != nil) != tt.wantErr {
 				t.Errorf("Loader.Load() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

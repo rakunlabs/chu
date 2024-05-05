@@ -26,7 +26,17 @@ func New(opts ...Option) *Loader {
 	}
 }
 
-func (l Loader) Load(ctx context.Context, to any, opts ...loader.Option) error {
+func (l Loader) Load(ctx context.Context, to any) error {
+	return l.LoadChu(ctx, to)
+}
+
+func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
+	opt := loader.NewOption(opts...)
+
+	if len(opt.Hooks) > 0 {
+		l.hooks = opt.Hooks
+	}
+
 	v := reflect.ValueOf(to)
 	if v.Kind() != reflect.Ptr {
 		return errors.New("default: value is not a pointer")
@@ -84,7 +94,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag *string
 		var err error
 
 		for _, hook := range l.hooks {
-			valGet, err = hook(reflect.TypeFor[string](), field.Type(), tag)
+			valGet, err = hook(reflect.TypeFor[string](), field.Type(), *tag)
 			if err != nil {
 				return err
 			}
@@ -104,19 +114,16 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag *string
 			return err
 		}
 	case reflect.Ptr:
-		switch field.Type().Elem().Kind() {
-		// just initialize the pointer if common type
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-			reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-			reflect.Float32, reflect.Float64, reflect.String, reflect.Bool:
+		if tag == nil {
+			return nil
+		}
 
-			if field.IsNil() {
-				field.Set(reflect.New(field.Type().Elem()))
-			}
+		if field.IsNil() {
+			field.Set(reflect.New(field.Type().Elem()))
+		}
 
-			if err := l.walkField(ctx, field.Elem(), tag); err != nil {
-				return err
-			}
+		if err := l.walkField(ctx, field.Elem(), tag); err != nil {
+			return err
 		}
 	default:
 		if tag == nil {

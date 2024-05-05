@@ -1,7 +1,6 @@
 package loader
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/spf13/cast"
@@ -9,6 +8,9 @@ import (
 
 var TagName = "cfg"
 
+// TagValue returns the value of the tag in the field in order of the tags.
+//
+// If the tag is not found, it will return the field name.
 func TagValue(field reflect.StructField, tags ...string) string {
 	value := field.Name
 	if len(tags) == 0 {
@@ -24,6 +26,9 @@ func TagValue(field reflect.StructField, tags ...string) string {
 	return value
 }
 
+// TagValueM returns the value of the tag in the field in order of the tags.
+//
+// If the tag is not found, it will return an empty string.
 func TagValueM(field reflect.StructField, tags ...string) string {
 	for _, tag := range tags {
 		if v, ok := field.Tag.Lookup(tag); ok {
@@ -34,6 +39,7 @@ func TagValueM(field reflect.StructField, tags ...string) string {
 	return ""
 }
 
+// AssignValue assigns the value to the field.
 func AssignValue(value string, field reflect.Value) error {
 	switch field.Kind() {
 	case reflect.String:
@@ -47,7 +53,7 @@ func AssignValue(value string, field reflect.Value) error {
 	case reflect.Bool:
 		field.SetBool(cast.ToBool(value))
 	default:
-		return fmt.Errorf("unsupported type %s", field.Kind())
+		return nil
 	}
 
 	return nil

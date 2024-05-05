@@ -7,5 +7,6 @@ require (
 	github.com/hashicorp/go-envparse v0.1.0
 	github.com/spf13/cast v1.6.0
 	github.com/worldline-go/struct2 v1.3.0
+	github.com/xhit/go-str2duration/v2 v2.1.0
 	gopkg.in/yaml.v3 v3.0.1
 )

@@ -22,24 +22,16 @@ func New(opts ...Option) *Loader {
 	}
 	opt.apply(opts...)
 
-	var hooks []struct2.HookDecodeFunc
-	if len(opt.Hooks) > 0 {
-		hooks = make([]struct2.HookDecodeFunc, len(opt.Hooks))
-		for i, h := range opt.Hooks {
-			hooks[i] = struct2.HookDecodeFunc(h)
-		}
-	}
-
-	decoder := struct2.Decoder{
-		TagName:               loader.TagName,
-		HooksDecode:           hooks,
-		WeaklyTypedInput:      true,
-		WeaklyIgnoreSeperator: opt.WeaklyIgnoreSeperator,
-		WeaklyDashUnderscore:  opt.WeaklyDashUnderscore,
-	}
+	hooks := convertHookFuncs(opt.Hooks)
 
 	return &Loader{
-		decoder: decoder,
+		decoder: struct2.Decoder{
+			TagName:               loader.TagName,
+			HooksDecode:           hooks,
+			WeaklyTypedInput:      true,
+			WeaklyIgnoreSeperator: opt.WeaklyIgnoreSeperator,
+			WeaklyDashUnderscore:  opt.WeaklyDashUnderscore,
+		},
 	}
 }
 
@@ -49,9 +41,20 @@ func (l Loader) SetValue(v interface{}) LoadSetter {
 	return LoadSetter(l)
 }
 
+func (l LoadSetter) Load(ctx context.Context, ptr any) error {
+	return l.LoadChu(ctx, ptr)
+}
+
 // Map to load map to struct.
-func (l LoadSetter) Load(_ context.Context, to any) error {
-	if err := l.decoder.Decode(l.value, to); err != nil {
+func (l LoadSetter) LoadChu(_ context.Context, ptr any, opts ...loader.Option) error {
+	opt := loader.NewOption(opts...)
+
+	hooks := convertHookFuncs(opt.Hooks)
+	if len(hooks) > 0 {
+		l.decoder.HooksDecode = hooks
+	}
+
+	if err := l.decoder.Decode(l.value, ptr); err != nil {
 		return fmt.Errorf("mapx: %w", err)
 	}
 

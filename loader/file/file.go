@@ -11,44 +11,61 @@ import (
 )
 
 type Loader struct {
-	mapx           *mapx.Loader
-	fileSuffix     []string
-	etcFolderCheck bool
-	name           string
-	decoders       map[string]Decoder
+	mapx                  *mapx.Loader
+	hooks                 []loader.HookFunc
+	weaklyIgnoreSeperator bool
+	weaklyDashUnderscore  bool
+	fileSuffix            []string
+	etcFolderCheck        bool
+	name                  string
+	decoders              map[string]Decoder
 }
 
 func New(opts ...Option) *Loader {
 	opt := &option{
-		FileSuffix:     []string{".toml", ".yaml", ".yml", ".json"},
-		Decoders:       getDecoders(),
-		EtcFolderCheck: true,
-		Name:           "",
+		FileSuffix:            []string{".toml", ".yaml", ".yml", ".json"},
+		Decoders:              getDecoders(),
+		EtcFolderCheck:        true,
+		Name:                  "",
+		WeaklyIgnoreSeperator: true,
+		WeaklyDashUnderscore:  true,
 	}
 	opt.apply(opts...)
 
-	if opt.Mapx == nil {
-		opt.Mapx = mapx.New()
-	}
-
 	return &Loader{
-		name:           opt.Name,
-		mapx:           opt.Mapx,
-		fileSuffix:     opt.FileSuffix,
-		etcFolderCheck: opt.EtcFolderCheck,
-		decoders:       opt.Decoders,
+		hooks:                 opt.Hooks,
+		weaklyIgnoreSeperator: opt.WeaklyIgnoreSeperator,
+		weaklyDashUnderscore:  opt.WeaklyDashUnderscore,
+		name:                  opt.Name,
+		fileSuffix:            opt.FileSuffix,
+		etcFolderCheck:        opt.EtcFolderCheck,
+		decoders:              opt.Decoders,
 	}
 }
 
 // Load loads the configuration from the file.
 //   - first it checks the current directory after that it checks the etc folder.
 //   - CONFIG_PATH environment variable is used to determine the file path.
-func (l Loader) Load(ctx context.Context, to any, opts ...loader.Option) error {
+func (l Loader) Load(ctx context.Context, name string, to any) error {
+	return l.LoadChu(ctx, to, loader.WithName(name))
+}
+
+func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
 	opt := loader.NewOption(opts...)
 
-	if opt.Name == "" {
+	if opt.Name != "" {
 		l.name = opt.Name
 	}
+
+	if len(opt.Hooks) > 0 {
+		l.hooks = opt.Hooks
+	}
+
+	l.mapx = mapx.New(
+		mapx.WithHooks(l.hooks...),
+		mapx.WithWeaklyIgnoreSeperator(l.weaklyIgnoreSeperator),
+		mapx.WithWeaklyDashUnderscore(l.weaklyDashUnderscore),
+	)
 
 	if path := os.Getenv("CONFIG_PATH"); path != "" {
 		if err := l.loadTo(ctx, path, to); err != nil {
