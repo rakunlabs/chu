@@ -27,7 +27,7 @@ func New(opts ...Option) *Loader {
 		Decoders:              getDecoders(),
 		Folders:               []string{"/etc"},
 		WeaklyIgnoreSeperator: true,
-		WeaklyDashUnderscore:  true,
+		WeaklyDashUnderscore:  false,
 	}
 	opt.apply(opts...)
 

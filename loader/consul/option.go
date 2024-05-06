@@ -1,7 +1,8 @@
-package file
+package consul
 
 import (
 	"github.com/rakunlabs/chu/loader"
+	"github.com/rakunlabs/chu/loader/file"
 )
 
 type Option func(*option)
@@ -10,9 +11,7 @@ type option struct {
 	Hooks                 []loader.HookFunc
 	WeaklyIgnoreSeperator bool
 	WeaklyDashUnderscore  bool
-	FileSuffix            []string
-	Folders               []string
-	Decoders              map[string]Decoder
+	Decoders              map[string]file.Decoder
 }
 
 func (o *option) apply(opts ...Option) {
@@ -44,30 +43,10 @@ func WithWeaklyDashUnderscore(v bool) Option {
 	}
 }
 
-func WithFileSuffix(suffix ...string) Option {
-	return func(o *option) {
-		o.FileSuffix = suffix
-	}
-}
-
-// WithFoldersSet sets the folders for the file loader.
-func WithFoldersSet(folders ...string) Option {
-	return func(o *option) {
-		o.Folders = folders
-	}
-}
-
-// WithFolders adds the folders for the file loader.
-func WithFolders(folders ...string) Option {
-	return func(o *option) {
-		o.Folders = append(o.Folders, folders...)
-	}
-}
-
-func WithDecoder(suffix string, d Decoder) Option {
+func WithDecoder(suffix string, d file.Decoder) Option {
 	return func(o *option) {
 		if o.Decoders == nil {
-			o.Decoders = make(map[string]Decoder)
+			o.Decoders = make(map[string]file.Decoder)
 		}
 
 		o.Decoders[suffix] = d

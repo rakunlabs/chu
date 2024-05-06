@@ -18,7 +18,7 @@ type LoadSetter Loader
 func New(opts ...Option) *Loader {
 	opt := &option{
 		WeaklyIgnoreSeperator: true,
-		WeaklyDashUnderscore:  true,
+		WeaklyDashUnderscore:  false,
 		Tag:                   "cfg",
 	}
 	opt.apply(opts...)
