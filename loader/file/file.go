@@ -16,7 +16,7 @@ type Loader struct {
 	weaklyIgnoreSeperator bool
 	weaklyDashUnderscore  bool
 	fileSuffix            []string
-	etcFolderCheck        bool
+	folders               []string
 	name                  string
 	decoders              map[string]Decoder
 }
@@ -25,8 +25,7 @@ func New(opts ...Option) *Loader {
 	opt := &option{
 		FileSuffix:            []string{".toml", ".yaml", ".yml", ".json"},
 		Decoders:              getDecoders(),
-		EtcFolderCheck:        true,
-		Name:                  "",
+		Folders:               []string{"/etc"},
 		WeaklyIgnoreSeperator: true,
 		WeaklyDashUnderscore:  true,
 	}
@@ -36,9 +35,8 @@ func New(opts ...Option) *Loader {
 		hooks:                 opt.Hooks,
 		weaklyIgnoreSeperator: opt.WeaklyIgnoreSeperator,
 		weaklyDashUnderscore:  opt.WeaklyDashUnderscore,
-		name:                  opt.Name,
 		fileSuffix:            opt.FileSuffix,
-		etcFolderCheck:        opt.EtcFolderCheck,
+		folders:               opt.Folders,
 		decoders:              opt.Decoders,
 	}
 }
@@ -62,6 +60,7 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 	}
 
 	l.mapx = mapx.New(
+		mapx.WithTag(opt.Tag),
 		mapx.WithHooks(l.hooks...),
 		mapx.WithWeaklyIgnoreSeperator(l.weaklyIgnoreSeperator),
 		mapx.WithWeaklyDashUnderscore(l.weaklyDashUnderscore),
@@ -100,10 +99,10 @@ func (l Loader) getPath(name string) string {
 		}
 	}
 
-	// check etc folder
-	if l.etcFolderCheck {
+	// check other folder
+	for _, folder := range l.folders {
 		for _, suffix := range l.fileSuffix {
-			path := filepath.Join("/etc", name, suffix)
+			path := filepath.Join(folder, name, suffix)
 			if _, err := os.Stat(path); err == nil {
 				return path
 			}

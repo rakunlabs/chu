@@ -11,8 +11,7 @@ type option struct {
 	WeaklyIgnoreSeperator bool
 	WeaklyDashUnderscore  bool
 	FileSuffix            []string
-	EtcFolderCheck        bool
-	Name                  string
+	Folders               []string
 	Decoders              map[string]Decoder
 }
 
@@ -51,9 +50,17 @@ func WithFileSuffix(suffix ...string) Option {
 	}
 }
 
-func WithEtcFolderCheck(v bool) Option {
+// WithFoldersSet sets the folders for the file loader.
+func WithFoldersSet(folders ...string) Option {
 	return func(o *option) {
-		o.EtcFolderCheck = v
+		o.Folders = folders
+	}
+}
+
+// WithFolders adds the folders for the file loader.
+func WithFolders(folders ...string) Option {
+	return func(o *option) {
+		o.Folders = append(o.Folders, folders...)
 	}
 }
 

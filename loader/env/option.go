@@ -8,7 +8,8 @@ type option struct {
 	Hooks     []loader.HookFunc
 	EnvHolder envHolder
 	EnvFiles  []string
-	TagName   string
+	TagEnv    string
+	Tag       string
 	Prefix    string
 }
 
@@ -39,9 +40,18 @@ func WithEnvFile(path ...string) Option {
 	}
 }
 
-func WithTagName(tagName string) Option {
+// WithTagEnv is `env` by default.
+func WithTagEnv(tagName string) Option {
 	return func(o *option) {
-		o.TagName = tagName
+		o.TagEnv = tagName
+	}
+}
+
+// WithTag is `cfg` by default.
+//   - tag is used if `env“ tag is not found.
+func WithTag(tag string) Option {
+	return func(o *option) {
+		o.Tag = tag
 	}
 }
 

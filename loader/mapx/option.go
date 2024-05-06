@@ -8,6 +8,7 @@ type option struct {
 	Hooks                 []loader.HookFunc
 	WeaklyIgnoreSeperator bool
 	WeaklyDashUnderscore  bool
+	Tag                   string
 }
 
 func (o *option) apply(opts ...Option) {
@@ -36,5 +37,13 @@ func WithWeaklyIgnoreSeperator(v bool) Option {
 func WithWeaklyDashUnderscore(v bool) Option {
 	return func(o *option) {
 		o.WeaklyDashUnderscore = v
+	}
+}
+
+// WithTag sets the tag for the configuration.
+//   - default is "cfg"
+func WithTag(tag string) Option {
+	return func(o *option) {
+		o.Tag = tag
 	}
 }

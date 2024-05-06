@@ -7,6 +7,7 @@ type Option func(*option)
 type option struct {
 	Loaders []Loader
 	Hooks   []loader.HookFunc
+	Tag     string
 }
 
 func (o *option) apply(opts ...Option) {
@@ -34,5 +35,13 @@ func WithHookSet(hooks ...loader.HookFunc) Option {
 func WithHook(hooks ...loader.HookFunc) Option {
 	return func(o *option) {
 		o.Hooks = append(o.Hooks, hooks...)
+	}
+}
+
+// WithTag sets the tag for the configuration.
+//   - default is "cfg"
+func WithTag(tag string) Option {
+	return func(o *option) {
+		o.Tag = tag
 	}
 }

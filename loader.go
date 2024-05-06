@@ -10,10 +10,13 @@ import (
 )
 
 type Loader interface {
-	LoadChu(ctx context.Context, ptr any, opts ...loader.Option) error
+	LoadChu(ctx context.Context, to any, opts ...loader.Option) error
 }
 
-func Load(ctx context.Context, name string, ptr any, opts ...Option) error {
+// Load loads the configuration from loaders.
+//   - default loaders are [defaultx, file, env].
+//   - default hooks are [loader.HookTimeDuration].
+func Load(ctx context.Context, name string, to any, opts ...Option) error {
 	opt := option{
 		Loaders: []Loader{
 			defaultx.New(),
@@ -23,14 +26,16 @@ func Load(ctx context.Context, name string, ptr any, opts ...Option) error {
 		Hooks: []loader.HookFunc{
 			loader.HookTimeDuration,
 		},
+		Tag: "cfg",
 	}
 	opt.apply(opts...)
 
 	for _, l := range opt.Loaders {
 		if err := l.LoadChu(
-			ctx, ptr,
+			ctx, to,
 			loader.WithName(name),
 			loader.WithHooks(opt.Hooks...),
+			loader.WithTag(opt.Tag),
 		); err != nil {
 			return err
 		}

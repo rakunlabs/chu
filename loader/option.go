@@ -3,6 +3,7 @@ package loader
 type Option func(*option)
 
 type option struct {
+	Tag   string
 	Name  string
 	Hooks []HookFunc
 }
@@ -10,6 +11,7 @@ type option struct {
 func NewOption(opts ...Option) *option {
 	opt := &option{
 		Name: "",
+		Tag:  "cfg",
 	}
 	opt.apply(opts...)
 	return opt
@@ -34,5 +36,13 @@ func WithName(name string) Option {
 func WithHooks(hooks ...HookFunc) Option {
 	return func(o *option) {
 		o.Hooks = hooks
+	}
+}
+
+// WithTag sets the tag name for struct field.
+//   - loaders may use this tag to load the configuration.
+func WithTag(tag string) Option {
+	return func(o *option) {
+		o.Tag = tag
 	}
 }

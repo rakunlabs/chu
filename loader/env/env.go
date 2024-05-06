@@ -12,7 +12,8 @@ import (
 )
 
 type Loader struct {
-	tagName   string
+	tagEnv    string
+	tag       string
 	envValues envHolder
 	hooks     []loader.HookFunc
 	envFiles  []string
@@ -21,7 +22,8 @@ type Loader struct {
 
 func New(opts ...Option) *Loader {
 	opt := &option{
-		TagName:  "env",
+		TagEnv:   "env",
+		Tag:      "cfg",
 		EnvFiles: []string{".env"},
 	}
 	opt.apply(opts...)
@@ -44,6 +46,16 @@ func (l Loader) Load(ctx context.Context, to any) error {
 }
 
 func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
+	opt := loader.NewOption(opts...)
+
+	if len(opt.Hooks) > 0 {
+		l.hooks = opt.Hooks
+	}
+
+	if opt.Tag != "" {
+		l.tag = opt.Tag
+	}
+
 	v := reflect.ValueOf(to)
 	if v.Kind() != reflect.Ptr {
 		return errors.New("env: value is not a pointer")
@@ -94,7 +106,7 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error
 			}
 
 			fieldType := v.Type().Field(i)
-			tag := loader.TagValue(fieldType, l.tagName, loader.TagName)
+			tag := loader.TagValue(fieldType, l.tagEnv, l.tag)
 			if tag == "-" {
 				continue
 			}

@@ -19,6 +19,7 @@ func New(opts ...Option) *Loader {
 	opt := &option{
 		WeaklyIgnoreSeperator: true,
 		WeaklyDashUnderscore:  true,
+		Tag:                   "cfg",
 	}
 	opt.apply(opts...)
 
@@ -26,7 +27,7 @@ func New(opts ...Option) *Loader {
 
 	return &Loader{
 		decoder: struct2.Decoder{
-			TagName:               loader.TagName,
+			TagName:               opt.Tag,
 			HooksDecode:           hooks,
 			WeaklyTypedInput:      true,
 			WeaklyIgnoreSeperator: opt.WeaklyIgnoreSeperator,
@@ -41,12 +42,12 @@ func (l Loader) SetValue(v interface{}) LoadSetter {
 	return LoadSetter(l)
 }
 
-func (l LoadSetter) Load(ctx context.Context, ptr any) error {
-	return l.LoadChu(ctx, ptr)
+func (l LoadSetter) Load(ctx context.Context, to any) error {
+	return l.LoadChu(ctx, to)
 }
 
 // Map to load map to struct.
-func (l LoadSetter) LoadChu(_ context.Context, ptr any, opts ...loader.Option) error {
+func (l LoadSetter) LoadChu(_ context.Context, to any, opts ...loader.Option) error {
 	opt := loader.NewOption(opts...)
 
 	hooks := convertHookFuncs(opt.Hooks)
@@ -54,7 +55,11 @@ func (l LoadSetter) LoadChu(_ context.Context, ptr any, opts ...loader.Option) e
 		l.decoder.HooksDecode = hooks
 	}
 
-	if err := l.decoder.Decode(l.value, ptr); err != nil {
+	if opt.Tag != "" {
+		l.decoder.TagName = opt.Tag
+	}
+
+	if err := l.decoder.Decode(l.value, to); err != nil {
 		return fmt.Errorf("mapx: %w", err)
 	}
 
