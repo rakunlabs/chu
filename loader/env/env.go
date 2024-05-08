@@ -3,7 +3,6 @@ package env
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"reflect"
 
@@ -58,7 +57,7 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 
 	v := reflect.ValueOf(to)
 	if v.Kind() != reflect.Ptr {
-		return errors.New("env: value is not a pointer")
+		return errors.New("value is not a pointer")
 	}
 
 	v = v.Elem()
@@ -83,7 +82,7 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 	l.envValues = envValues
 
 	if err := l.walk(ctx, v, ""); err != nil {
-		return fmt.Errorf("env: %w", err)
+		return err
 	}
 
 	return nil

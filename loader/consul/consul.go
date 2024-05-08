@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"sync"
 
 	"github.com/hashicorp/consul/api"
@@ -21,6 +22,19 @@ type Loader struct {
 	WriteOptions api.WriteOptions
 
 	m sync.RWMutex
+
+	// Decode for consul file to interface{}
+	//  - default is yaml decoder
+	Decode func(r io.Reader, to interface{}) error
+}
+
+func New(opts ...Option) *Loader {
+	opt := option{}
+	opt.apply(opts...)
+
+	return &Loader{
+		Decode: opt.Decode,
+	}
 }
 
 func (l *Loader) SetClient(c *api.Client) {
@@ -165,8 +179,11 @@ func (l *Loader) DynamicValue(ctx context.Context, wg *sync.WaitGroup, key strin
 	return vChannel, plan.Stop, nil
 }
 
-// Map to load map to struct.
 func (l *Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
+	if _, ok := loader.GetExistEnv("CONSUL_HTTP_ADDR"); !ok {
+		return fmt.Errorf("CONSUL_HTTP_ADDR is required: %w", loader.ErrSkipLoader)
+	}
+
 	opt := loader.NewOption(opts...)
 
 	if err := l.setClient(); err != nil {
@@ -178,9 +195,28 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) err
 		return err
 	}
 
-	codec := decoder.Yaml{}
-	if err := codec.Decode(bytes.NewReader(vRaw), to); err != nil {
+	var mapping interface{}
+
+	decode := l.Decode
+	if decode == nil {
+		decode = decoder.Yaml{}.Decode
+	}
+
+	if err := decode(bytes.NewReader(vRaw), &mapping); err != nil {
 		return fmt.Errorf("failed to decode: %w", err)
+	}
+
+	mapDecoder := opt.MapDecoder
+
+	if mapDecoder == nil {
+		mapDecoder = decoder.NewMap(
+			decoder.WithTag(opt.Tag),
+			decoder.WithHooks(opt.Hooks...),
+		).Decode
+	}
+
+	if err := mapDecoder(mapping, to); err != nil {
+		return fmt.Errorf("failed to map decode: %w", err)
 	}
 
 	return nil

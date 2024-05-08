@@ -28,9 +28,11 @@ if err := chu.Load(ctx, "test", &cfg); err != nil {
 ```
 
 The configuration will be loaded from the following sources in order:  
-__-__ Default Tags  
-__-__ Environment Variables  
-__-__ Files
+__-__ Default  
+__-__ Consul  
+__-__ Vault  
+__-__ File  
+__-__ Environment
 
 ### Loaders
 

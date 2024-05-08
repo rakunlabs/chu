@@ -2,11 +2,14 @@ package vault
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
 
 	"github.com/hashicorp/vault/api"
+	"github.com/rakunlabs/chu/loader"
+	"github.com/rakunlabs/chu/utils/decoder"
 )
 
 type Loader struct {
@@ -14,6 +17,10 @@ type Loader struct {
 	AppRoleBasePath string
 
 	m sync.RWMutex
+}
+
+func New() *Loader {
+	return &Loader{}
 }
 
 func (l *Loader) SetClient(c *api.Client) {
@@ -65,7 +72,7 @@ func (l *Loader) Login(ctx context.Context) error {
 	// First, let's get the role ID given to us by our Vault administrator.
 	roleID := os.Getenv("VAULT_ROLE_ID")
 	if roleID == "" {
-		return fmt.Errorf("no role ID was provided in VAULT_ROLE_ID env var")
+		return nil
 	}
 
 	// check default path
@@ -121,6 +128,43 @@ func (l *Loader) Delete(ctx context.Context, mountPath string, key string) error
 	err := l.client.KVv2(mountPath).Delete(ctx, key)
 	if err != nil {
 		return fmt.Errorf("failed to delete key: %w", err)
+	}
+
+	return nil
+}
+
+func (l *Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
+	if _, ok := loader.GetExistEnv("VAULT_ADDR", "VAULT_AGENT_ADDR"); !ok {
+		return fmt.Errorf("VAULT_ADDR or VAULT_AGENT_ADDR is required: %w", loader.ErrSkipLoader)
+	}
+
+	mountPath := os.Getenv("CONFIG_VAULT_PREFIX")
+	if mountPath == "" {
+		return errors.New("CONFIG_VAULT_PREFIX is required as mount path")
+	}
+
+	opt := loader.NewOption(opts...)
+
+	if err := l.Login(ctx); err != nil {
+		return err
+	}
+
+	v, err := l.Load(ctx, mountPath, opt.Name)
+	if err != nil {
+		return err
+	}
+
+	mapDecoder := opt.MapDecoder
+
+	if mapDecoder == nil {
+		mapDecoder = decoder.NewMap(
+			decoder.WithTag(opt.Tag),
+			decoder.WithHooks(opt.Hooks...),
+		).Decode
+	}
+
+	if err := mapDecoder(v, to); err != nil {
+		return fmt.Errorf("failed to map decode: %w", err)
 	}
 
 	return nil

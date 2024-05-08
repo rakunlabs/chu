@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
@@ -25,6 +26,8 @@ type Exampler struct {
 
 func main() {
 	n := getNumber()
+
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 
 	log.Printf("EXAMPLE_NO: %d", n)
 

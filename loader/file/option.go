@@ -64,6 +64,8 @@ func WithFolders(folders ...string) Option {
 	}
 }
 
+// WithDecoder sets the decoder for the file loader.
+//   - suffix is the file extension as `.yaml`
 func WithDecoder(suffix string, d Decoder) Option {
 	return func(o *option) {
 		if o.Decoders == nil {

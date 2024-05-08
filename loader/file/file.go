@@ -2,16 +2,15 @@ package file
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/rakunlabs/chu/loader"
-	"github.com/rakunlabs/chu/loader/mapx"
+	"github.com/rakunlabs/chu/utils/decoder"
 )
 
 type Loader struct {
-	mapx                  *mapx.Loader
+	mapDecoder            func(input, output interface{}) error
 	hooks                 []loader.HookFunc
 	weaklyIgnoreSeperator bool
 	weaklyDashUnderscore  bool
@@ -59,16 +58,22 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 		l.hooks = opt.Hooks
 	}
 
-	l.mapx = mapx.New(
-		mapx.WithTag(opt.Tag),
-		mapx.WithHooks(l.hooks...),
-		mapx.WithWeaklyIgnoreSeperator(l.weaklyIgnoreSeperator),
-		mapx.WithWeaklyDashUnderscore(l.weaklyDashUnderscore),
-	)
+	if opt.MapDecoder != nil {
+		l.mapDecoder = opt.MapDecoder
+	}
+
+	if l.mapDecoder == nil {
+		l.mapDecoder = decoder.NewMap(
+			decoder.WithTag(opt.Tag),
+			decoder.WithWeaklyIgnoreSeperator(l.weaklyIgnoreSeperator),
+			decoder.WithWeaklyDashUnderscore(l.weaklyDashUnderscore),
+			decoder.WithHooks(l.hooks...),
+		).Decode
+	}
 
 	if path := os.Getenv("CONFIG_PATH"); path != "" {
 		if err := l.loadTo(ctx, path, to); err != nil {
-			return fmt.Errorf("file: %w", err)
+			return err
 		}
 
 		return nil
@@ -84,7 +89,7 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 	}
 
 	if err := l.loadTo(ctx, path, to); err != nil {
-		return fmt.Errorf("file: %w", err)
+		return err
 	}
 
 	return nil
@@ -118,7 +123,7 @@ func (l Loader) loadTo(ctx context.Context, path string, to any) error {
 		return err
 	}
 
-	return l.mapx.SetValue(mapping).Load(ctx, to)
+	return l.mapDecoder(mapping, to)
 }
 
 func (l Loader) fileToMap(path string) (interface{}, error) {

@@ -3,7 +3,6 @@ package defaultx
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/rakunlabs/chu/loader"
@@ -39,7 +38,7 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 
 	v := reflect.ValueOf(to)
 	if v.Kind() != reflect.Ptr {
-		return errors.New("default: value is not a pointer")
+		return errors.New("value is not a pointer")
 	}
 
 	v = v.Elem()
@@ -48,7 +47,7 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 	}
 
 	if err := l.walk(ctx, v); err != nil {
-		return fmt.Errorf("default: %w", err)
+		return err
 	}
 
 	return nil
