@@ -3,7 +3,7 @@ package loader
 import (
 	"log/slog"
 
-	"github.com/rakunlabs/logi"
+	"github.com/rakunlabs/logi/logadapter"
 )
 
 type Option func(*option)
@@ -13,7 +13,7 @@ type option struct {
 	Name       string
 	Hooks      []HookFunc
 	MapDecoder func(input interface{}, output interface{}) error
-	Logger     logi.Adapter
+	Logger     logadapter.Adapter
 }
 
 func NewOption(opts ...Option) *option {
@@ -66,7 +66,7 @@ func WithTag(tag string) Option {
 }
 
 // WithLogger sets the logger for logging.
-func WithLogger(logger logi.Adapter) Option {
+func WithLogger(logger logadapter.Adapter) Option {
 	return func(o *option) {
 		o.Logger = logger
 	}
