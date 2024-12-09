@@ -64,7 +64,7 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 func (l Loader) getPath(name string) string {
 	// check current directory
 	for _, suffix := range l.FileSuffix {
-		path := filepath.Join(name, suffix)
+		path := name + suffix
 		if _, err := os.Stat(path); err == nil {
 			return path
 		}
@@ -73,7 +73,7 @@ func (l Loader) getPath(name string) string {
 	// check other folder
 	for _, folder := range l.Folders {
 		for _, suffix := range l.FileSuffix {
-			path := filepath.Join(folder, name, suffix)
+			path := filepath.Join(folder, name+suffix)
 			if _, err := os.Stat(path); err == nil {
 				return path
 			}
