@@ -1,4 +1,4 @@
-package decoder
+package decodermap
 
 import (
 	"github.com/rakunlabs/chu/loader"
@@ -9,7 +9,7 @@ type Map struct {
 	decoder struct2.Decoder
 }
 
-func NewMap(opts ...Option) *Map {
+func New(opts ...Option) *Map {
 	opt := &option{
 		WeaklyIgnoreSeperator: true,
 		WeaklyDashUnderscore:  false,

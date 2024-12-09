@@ -2,6 +2,7 @@ package chu
 
 import (
 	"github.com/rakunlabs/chu/loader"
+	"github.com/rakunlabs/logi"
 )
 
 type Option func(*option)
@@ -18,7 +19,7 @@ type option struct {
 	//  - default is false
 	WeaklyDashUnderscore bool
 	// Logger for logging.
-	Logger loader.LogAdapter
+	Logger logi.Adapter
 }
 
 func (o *option) apply(opts ...Option) {
@@ -74,7 +75,7 @@ func WithWeaklyDashUnderscore(v bool) Option {
 }
 
 // WithLogger sets the logger for logging.
-func WithLogger(logger loader.LogAdapter) Option {
+func WithLogger(logger logi.Adapter) Option {
 	return func(o *option) {
 		o.Logger = logger
 	}

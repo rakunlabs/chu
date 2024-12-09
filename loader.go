@@ -7,12 +7,10 @@ import (
 	"log/slog"
 
 	"github.com/rakunlabs/chu/loader"
-	"github.com/rakunlabs/chu/loader/consul"
-	"github.com/rakunlabs/chu/loader/defaultx"
-	"github.com/rakunlabs/chu/loader/env"
-	"github.com/rakunlabs/chu/loader/file"
-	"github.com/rakunlabs/chu/loader/vault"
-	"github.com/rakunlabs/chu/utils/decoder"
+	"github.com/rakunlabs/chu/loader/defaultloader"
+	"github.com/rakunlabs/chu/loader/envloader"
+	"github.com/rakunlabs/chu/loader/fileloader"
+	"github.com/rakunlabs/chu/utils/decodermap"
 )
 
 type Loader interface {
@@ -25,25 +23,26 @@ type LoadHolder struct {
 }
 
 var (
-	defaultLoaders = []LoadHolder{
-		{Name: "default", Loader: defaultx.New()},
-		{Name: "consul", Loader: consul.New()},
-		{Name: "vault", Loader: vault.New()},
-		{Name: "file", Loader: file.New()},
-		{Name: "env", Loader: env.New()},
+	DefaultLoaders = []LoadHolder{
+		{Name: "default", Loader: defaultloader.New()},
+		{Name: "file", Loader: fileloader.New()},
+		{Name: "env", Loader: envloader.New()},
 	}
-	defaultHooks = []loader.HookFunc{
+	DefaultHooks = []loader.HookFunc{
 		loader.HookTimeDuration,
 	}
+	DefaultOptions = []Option{}
 )
 
 // Load loads the configuration from loaders.
 //   - default loaders are [defaultx, file, env].
 //   - default hooks are [loader.HookTimeDuration].
 func Load(ctx context.Context, name string, to any, opts ...Option) error {
+	opts = append(DefaultOptions, opts...)
+
 	opt := option{
-		Loaders:               defaultLoaders,
-		Hooks:                 defaultHooks,
+		Loaders:               DefaultLoaders,
+		Hooks:                 DefaultHooks,
 		Tag:                   "cfg",
 		WeaklyIgnoreSeperator: true,
 		WeaklyDashUnderscore:  false,
@@ -51,11 +50,11 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 	}
 	opt.apply(opts...)
 
-	mapDecoder := decoder.NewMap(
-		decoder.WithTag(opt.Tag),
-		decoder.WithHooks(opt.Hooks...),
-		decoder.WithWeaklyIgnoreSeperator(opt.WeaklyIgnoreSeperator),
-		decoder.WithWeaklyDashUnderscore(opt.WeaklyDashUnderscore),
+	mapDecoder := decodermap.New(
+		decodermap.WithTag(opt.Tag),
+		decodermap.WithHooks(opt.Hooks...),
+		decodermap.WithWeaklyIgnoreSeperator(opt.WeaklyIgnoreSeperator),
+		decodermap.WithWeaklyDashUnderscore(opt.WeaklyDashUnderscore),
 	).Decode
 
 	for _, l := range opt.Loaders {

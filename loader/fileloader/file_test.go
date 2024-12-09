@@ -1,4 +1,4 @@
-package file
+package fileloader
 
 import (
 	"context"
@@ -6,12 +6,10 @@ import (
 	"testing"
 
 	"github.com/rakunlabs/chu/loader"
+	"github.com/rakunlabs/chu/utils/decodermap"
 )
 
 func TestLoader_Load(t *testing.T) {
-	type fields struct {
-		options []Option
-	}
 	type args struct {
 		ctx  context.Context
 		to   any
@@ -19,16 +17,12 @@ func TestLoader_Load(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		want    any
 		wantErr bool
 	}{
 		{
 			name: "basic",
-			fields: fields{
-				options: []Option{},
-			},
 			args: args{
 				ctx: context.Background(),
 				to: &struct {
@@ -46,11 +40,18 @@ func TestLoader_Load(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
+	mapDecoder := decodermap.New().Decode
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			l := New()
 
 			t.Setenv("CONFIG_PATH", "testdata/config.yaml")
+
+			tt.args.opts = append([]loader.Option{
+				loader.WithMapDecoder(mapDecoder),
+			}, tt.args.opts...)
 
 			if err := l.LoadChu(tt.args.ctx, tt.args.to, tt.args.opts...); (err != nil) != tt.wantErr {
 				t.Errorf("Loader.Load() error = %v, wantErr %v", err, tt.wantErr)

@@ -1,4 +1,4 @@
-package consul
+package consulloader
 
 import (
 	"bytes"
@@ -11,7 +11,8 @@ import (
 	"github.com/hashicorp/consul/api/watch"
 	"github.com/hashicorp/go-hclog"
 	"github.com/rakunlabs/chu/loader"
-	"github.com/rakunlabs/chu/utils/decoder"
+	"github.com/rakunlabs/chu/utils/decoderfile"
+	"github.com/rakunlabs/chu/utils/decodermap"
 )
 
 type Loader struct {
@@ -199,7 +200,7 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) err
 
 	decode := l.Decode
 	if decode == nil {
-		decode = decoder.Yaml{}.Decode
+		decode = decoderfile.Yaml{}.Decode
 	}
 
 	if err := decode(bytes.NewReader(vRaw), &mapping); err != nil {
@@ -209,9 +210,9 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) err
 	mapDecoder := opt.MapDecoder
 
 	if mapDecoder == nil {
-		mapDecoder = decoder.NewMap(
-			decoder.WithTag(opt.Tag),
-			decoder.WithHooks(opt.Hooks...),
+		mapDecoder = decodermap.New(
+			decodermap.WithTag(opt.Tag),
+			decodermap.WithHooks(opt.Hooks...),
 		).Decode
 	}
 

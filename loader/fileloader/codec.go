@@ -1,11 +1,11 @@
-package file
+package fileloader
 
 import (
 	"errors"
 	"fmt"
 	"io"
 
-	"github.com/rakunlabs/chu/utils/decoder"
+	"github.com/rakunlabs/chu/utils/decoderfile"
 )
 
 var ErrUnsupportedFileFormat = errors.New("unsupported file format")
@@ -14,19 +14,19 @@ type Decoder interface {
 	Decode(r io.Reader, to interface{}) error
 }
 
-func getDecoders() map[string]Decoder {
-	yamlDecoder := &decoder.Yaml{}
+func Decoders() map[string]Decoder {
+	yamlDecoder := &decoderfile.Yaml{}
 
 	return map[string]Decoder{
-		".toml": &decoder.Toml{},
+		".toml": &decoderfile.Toml{},
 		".yaml": yamlDecoder,
 		".yml":  yamlDecoder,
-		".json": &decoder.Json{},
+		".json": &decoderfile.Json{},
 	}
 }
 
 func (l Loader) getFileDecoder(ext string) (Decoder, error) {
-	if decoder, ok := l.decoders[ext]; ok {
+	if decoder, ok := l.Decoders[ext]; ok {
 		return decoder, nil
 	}
 

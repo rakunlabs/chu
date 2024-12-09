@@ -1,4 +1,4 @@
-package defaultx
+package defaultloader
 
 import "github.com/rakunlabs/chu/loader"
 
