@@ -1,6 +1,6 @@
 module github.com/rakunlabs/chu
 
-go 1.22
+go 1.24
 
 require (
 	github.com/BurntSushi/toml v1.4.0
@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/vault/api v1.15.0
 	github.com/rakunlabs/logi v0.4.0
 	github.com/spf13/cast v1.7.0
-	github.com/worldline-go/klient v0.9.2
+	github.com/worldline-go/klient v0.9.8
 	github.com/worldline-go/struct2 v1.3.1
 	github.com/xhit/go-str2duration/v2 v2.1.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -41,10 +41,10 @@ require (
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/twmb/tlscfg v1.2.1 // indirect
 	github.com/worldline-go/logz v0.5.1 // indirect
-	golang.org/x/crypto v0.23.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
-	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 )

@@ -31,18 +31,18 @@ func TagValue(field reflect.StructField, tags ...string) string {
 // TagValueM returns the value of the tag in the field in order of the tags.
 //
 // If the tag is not found, it will return an empty string.
-func TagValueM(field reflect.StructField, tags ...string) string {
+func TagValueM(field reflect.StructField, tags ...string) *string {
 	for _, tag := range tags {
 		if tag == "" {
 			continue
 		}
 
 		if v, ok := field.Tag.Lookup(tag); ok {
-			return v
+			return &v
 		}
 	}
 
-	return ""
+	return nil
 }
 
 // AssignValue assigns the value to the field.

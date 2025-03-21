@@ -62,7 +62,7 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value) error {
 
 	switch v.Kind() {
 	case reflect.Struct:
-		for i := 0; i < v.NumField(); i++ {
+		for i := range v.NumField() {
 			field := v.Field(i)
 			// skip unexported field
 			if !field.CanSet() {
@@ -71,11 +71,11 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value) error {
 
 			fieldType := v.Type().Field(i)
 			tag := loader.TagValueM(fieldType, l.tagName)
-			if tag == "-" {
+			if tag != nil && *tag == "-" {
 				continue
 			}
 
-			if err := l.walkField(ctx, field, &tag); err != nil {
+			if err := l.walkField(ctx, field, tag); err != nil {
 				return err
 			}
 		}
@@ -89,7 +89,7 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value) error {
 func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag *string) error {
 	// check direct exist
 	if tag != nil && len(l.hooks) > 0 {
-		var valGet interface{}
+		var valGet any
 		var err error
 
 		for _, hook := range l.hooks {

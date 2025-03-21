@@ -1,9 +1,9 @@
 package defaultloader
 
 import (
-	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/rakunlabs/chu/loader"
 )
@@ -23,19 +23,30 @@ func TestLoader_Load(t *testing.T) {
 			name: "success",
 			args: args{
 				to: &struct {
-					Str    string `default:"hello"`
-					Uint32 uint32 `default:"1"`
-					Bool   bool   `default:"true"`
-				}{},
+					Str     string `default:"hello"`
+					Uint32  uint32 `default:"1"`
+					Bool    bool   `default:"true"`
+					Defined string
+					Ok      time.Duration `default:"2d"`
+				}{
+					Defined: "defined",
+				},
+				opts: []loader.Option{
+					loader.WithHooks(loader.HookTimeDuration),
+				},
 			},
 			want: &struct {
-				Str    string `default:"hello"`
-				Uint32 uint32 `default:"1"`
-				Bool   bool   `default:"true"`
+				Str     string `default:"hello"`
+				Uint32  uint32 `default:"1"`
+				Bool    bool   `default:"true"`
+				Defined string
+				Ok      time.Duration `default:"2d"`
 			}{
-				Str:    "hello",
-				Uint32: 1,
-				Bool:   true,
+				Str:     "hello",
+				Uint32:  1,
+				Bool:    true,
+				Defined: "defined",
+				Ok:      2 * 24 * time.Hour,
 			},
 			wantErr: false,
 		},
@@ -43,7 +54,7 @@ func TestLoader_Load(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			l := New()
-			if err := l.LoadChu(context.Background(), tt.args.to, tt.args.opts...); (err != nil) != tt.wantErr {
+			if err := l.LoadChu(t.Context(), tt.args.to, tt.args.opts...); (err != nil) != tt.wantErr {
 				t.Errorf("Loader.Load() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
