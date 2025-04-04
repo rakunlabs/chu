@@ -9,10 +9,10 @@ import (
 )
 
 // HookFunc get input, output and data and return modified data.
-type HookFunc func(reflect.Type, reflect.Type, interface{}) (interface{}, error)
+type HookFunc func(reflect.Type, reflect.Type, any) (any, error)
 
 // HookTimeDuration for time.Duration
-func HookTimeDuration(in reflect.Type, out reflect.Type, data interface{}) (interface{}, error) {
+func HookTimeDuration(in reflect.Type, out reflect.Type, data any) (any, error) {
 	if out == reflect.TypeFor[time.Duration]() {
 		switch in.Kind() {
 		case reflect.String:

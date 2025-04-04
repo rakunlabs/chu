@@ -27,13 +27,7 @@ func New(opts ...Option) *Loader {
 	}
 }
 
-func (l Loader) Load(ctx context.Context, to any) error {
-	return l.LoadChu(ctx, to)
-}
-
-func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
-	opt := loader.NewOption(opts...)
-
+func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 	if len(opt.Hooks) > 0 {
 		l.hooks = opt.Hooks
 	}

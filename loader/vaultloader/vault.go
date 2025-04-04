@@ -133,7 +133,7 @@ func (l *Loader) Delete(ctx context.Context, mountPath string, key string) error
 	return nil
 }
 
-func (l *Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
+func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 	if _, ok := loader.GetExistEnv("VAULT_ADDR", "VAULT_AGENT_ADDR"); !ok {
 		return fmt.Errorf("VAULT_ADDR or VAULT_AGENT_ADDR is required: %w", loader.ErrSkipLoader)
 	}
@@ -142,8 +142,6 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) err
 	if mountPath == "" {
 		return errors.New("CONFIG_VAULT_PREFIX is required as mount path")
 	}
-
-	opt := loader.NewOption(opts...)
 
 	if err := l.Login(ctx); err != nil {
 		return err

@@ -14,7 +14,7 @@ import (
 )
 
 type Loader interface {
-	LoadChu(ctx context.Context, to any, opts ...loader.Option) error
+	LoadChu(ctx context.Context, to any, opt *loader.Option) error
 }
 
 type LoadHolder struct {
@@ -57,15 +57,16 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 		decodermap.WithWeaklyDashUnderscore(opt.WeaklyDashUnderscore),
 	).Decode
 
+	optLoader := loader.NewOption(
+		loader.WithName(name),
+		loader.WithHooks(opt.Hooks...),
+		loader.WithTag(opt.Tag),
+		loader.WithMapDecoder(mapDecoder),
+		loader.WithLogger(opt.Logger),
+	)
+
 	for _, l := range opt.Loaders {
-		if err := l.Loader.LoadChu(
-			ctx, to,
-			loader.WithName(name),
-			loader.WithHooks(opt.Hooks...),
-			loader.WithTag(opt.Tag),
-			loader.WithMapDecoder(mapDecoder),
-			loader.WithLogger(opt.Logger),
-		); err != nil {
+		if err := l.Loader.LoadChu(ctx, to, optLoader); err != nil {
 			if errors.Is(err, loader.ErrSkipLoader) {
 				opt.Logger.Debug(err.Error(), "loader", l.Name)
 

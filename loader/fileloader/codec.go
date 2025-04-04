@@ -11,7 +11,7 @@ import (
 var ErrUnsupportedFileFormat = errors.New("unsupported file format")
 
 type Decoder interface {
-	Decode(r io.Reader, to interface{}) error
+	Decode(r io.Reader, to any) error
 }
 
 func Decoders() map[string]Decoder {

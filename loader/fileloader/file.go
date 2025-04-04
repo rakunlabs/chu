@@ -30,8 +30,7 @@ func New() *Loader {
 // Load loads the configuration from the file.
 //   - first it checks the current directory after that it checks the etc folder.
 //   - CONFIG_PATH environment variable is used to determine the file path.
-func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
-	opt := loader.NewOption(opts...)
+func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 	if l.MapDecoder == nil {
 		l.MapDecoder = opt.MapDecoder
 	}
@@ -65,11 +64,11 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 }
 
 func (l Loader) getEnv(name string) string {
-	if path := os.Getenv("CONFIG_PATH"); path != "" {
+	if path := os.Getenv("CONFIG_PATH" + "_" + strings.ToUpper(name)); path != "" {
 		return path
 	}
 
-	if path := os.Getenv("CONFIG_PATH" + "_" + strings.ToUpper(name)); path != "" {
+	if path := os.Getenv("CONFIG_PATH"); path != "" {
 		return path
 	}
 
@@ -107,13 +106,13 @@ func (l Loader) loadTo(_ context.Context, path string, to any) error {
 	return l.MapDecoder(mapping, to)
 }
 
-func (l Loader) fileToMap(path string) (interface{}, error) {
+func (l Loader) fileToMap(path string) (any, error) {
 	fileDecoder, err := l.getFileDecoder(filepath.Ext(path))
 	if err != nil {
 		return nil, err
 	}
 
-	var mapping interface{}
+	var mapping any
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err

@@ -1,10 +1,11 @@
 package envloader
 
 import (
-	"context"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/rakunlabs/chu/loader"
 )
 
 func TestLoad(t *testing.T) {
@@ -207,7 +208,7 @@ func TestLoad(t *testing.T) {
 			}
 
 			e := New(tt.args.opts...)
-			if err := e.Load(context.Background(), tt.args.value); (err != nil) != tt.wantErr {
+			if err := e.LoadChu(t.Context(), tt.args.value, loader.NewOption()); (err != nil) != tt.wantErr {
 				t.Errorf("Load() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

@@ -13,7 +13,7 @@ func TestLoader_Load(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		to   any
-		opts []loader.Option
+		opts []loader.OptionFunc
 	}
 	tests := []struct {
 		name    string
@@ -28,7 +28,7 @@ func TestLoader_Load(t *testing.T) {
 				to: &struct {
 					Host string `cfg:"host"`
 				}{},
-				opts: []loader.Option{
+				opts: []loader.OptionFunc{
 					loader.WithName("config"),
 				},
 			},
@@ -49,11 +49,13 @@ func TestLoader_Load(t *testing.T) {
 
 			t.Setenv("CONFIG_PATH", "testdata/config.yaml")
 
-			tt.args.opts = append([]loader.Option{
+			tt.args.opts = append([]loader.OptionFunc{
 				loader.WithMapDecoder(mapDecoder),
 			}, tt.args.opts...)
 
-			if err := l.LoadChu(tt.args.ctx, tt.args.to, tt.args.opts...); (err != nil) != tt.wantErr {
+			opt := loader.NewOption(tt.args.opts...)
+
+			if err := l.LoadChu(tt.args.ctx, tt.args.to, opt); (err != nil) != tt.wantErr {
 				t.Errorf("Loader.Load() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

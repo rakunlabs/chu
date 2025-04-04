@@ -42,13 +42,7 @@ func New(opts ...Option) *Loader {
 // Load loads the configuration from the environment.
 //   - to must be a pointer to a struct
 //   - only struct fields load values
-func (l Loader) Load(ctx context.Context, to any) error {
-	return l.LoadChu(ctx, to)
-}
-
-func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
-	opt := loader.NewOption(opts...)
-
+func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 	if len(opt.Hooks) > 0 {
 		l.hooks = opt.Hooks
 	}
@@ -139,7 +133,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 
 	// check direct exist
 	if value, ok := l.envValues[tag]; ok && len(l.hooks) > 0 {
-		var valGet interface{}
+		var valGet any
 		var err error
 
 		for _, hook := range l.hooks {
@@ -176,7 +170,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 			field.Set(reflect.MakeSlice(field.Type(), maxValue, maxValue))
 		}
 
-		for j := 0; j < field.Len(); j++ {
+		for j := range field.Len() {
 			if err := l.walk(ctx, field.Index(j), tag+"_"+cast.ToString(j)+"_"); err != nil {
 				return err
 			}

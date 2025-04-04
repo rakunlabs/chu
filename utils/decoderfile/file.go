@@ -11,7 +11,7 @@ import (
 
 type Json struct{}
 
-func (Json) Decode(r io.Reader, to interface{}) error {
+func (Json) Decode(r io.Reader, to any) error {
 	decoder := json.NewDecoder(r)
 
 	if err := decoder.Decode(to); err != nil {
@@ -23,7 +23,7 @@ func (Json) Decode(r io.Reader, to interface{}) error {
 
 type Toml struct{}
 
-func (Toml) Decode(r io.Reader, to interface{}) error {
+func (Toml) Decode(r io.Reader, to any) error {
 	decoder := toml.NewDecoder(r)
 
 	if _, err := decoder.Decode(to); err != nil {
@@ -35,7 +35,7 @@ func (Toml) Decode(r io.Reader, to interface{}) error {
 
 type Yaml struct{}
 
-func (Yaml) Decode(r io.Reader, to interface{}) error {
+func (Yaml) Decode(r io.Reader, to any) error {
 	decoder := yaml.NewDecoder(r)
 
 	if err := decoder.Decode(to); err != nil {

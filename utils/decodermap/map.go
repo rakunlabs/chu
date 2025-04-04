@@ -30,7 +30,7 @@ func New(opts ...Option) *Map {
 	}
 }
 
-func (m *Map) Decode(input, output interface{}) error {
+func (m *Map) Decode(input, output any) error {
 	return m.decoder.Decode(input, output)
 }
 

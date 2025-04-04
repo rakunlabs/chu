@@ -24,9 +24,9 @@ type Loader struct {
 
 	m sync.RWMutex
 
-	// Decode for consul file to interface{}
+	// Decode for consul file to any
 	//  - default is yaml decoder
-	Decode func(r io.Reader, to interface{}) error
+	Decode func(r io.Reader, to any) error
 }
 
 func New(opts ...Option) *Loader {
@@ -132,7 +132,7 @@ func (l *Loader) DynamicValue(ctx context.Context, wg *sync.WaitGroup, key strin
 		return nil, nil, err
 	}
 
-	plan, err := watch.Parse(map[string]interface{}{
+	plan, err := watch.Parse(map[string]any{
 		"type": "key",
 		"key":  key,
 	})
@@ -143,7 +143,7 @@ func (l *Loader) DynamicValue(ctx context.Context, wg *sync.WaitGroup, key strin
 	// not add any buffer, this is useful for getting latest change only
 	vChannel := make(chan []byte)
 
-	plan.HybridHandler = func(_ watch.BlockingParamVal, raw interface{}) {
+	plan.HybridHandler = func(_ watch.BlockingParamVal, raw any) {
 		if raw == nil {
 			return
 		}
@@ -180,12 +180,10 @@ func (l *Loader) DynamicValue(ctx context.Context, wg *sync.WaitGroup, key strin
 	return vChannel, plan.Stop, nil
 }
 
-func (l *Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) error {
+func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 	if _, ok := loader.GetExistEnv("CONSUL_HTTP_ADDR"); !ok {
 		return fmt.Errorf("CONSUL_HTTP_ADDR is required: %w", loader.ErrSkipLoader)
 	}
-
-	opt := loader.NewOption(opts...)
 
 	if err := l.setClient(); err != nil {
 		return err
@@ -196,7 +194,7 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) err
 		return err
 	}
 
-	var mapping interface{}
+	var mapping any
 
 	decode := l.Decode
 	if decode == nil {

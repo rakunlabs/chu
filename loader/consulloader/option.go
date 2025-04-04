@@ -7,7 +7,7 @@ import (
 type Option func(*option)
 
 type option struct {
-	Decode func(r io.Reader, to interface{}) error
+	Decode func(r io.Reader, to any) error
 }
 
 func (o *option) apply(opts ...Option) {
@@ -18,7 +18,7 @@ func (o *option) apply(opts ...Option) {
 
 // WithDecode sets the decoder for the consul loader.
 //   - default is yaml decoder
-func WithDecode(d func(r io.Reader, to interface{}) error) Option {
+func WithDecode(d func(r io.Reader, to any) error) Option {
 	return func(o *option) {
 		o.Decode = d
 	}
