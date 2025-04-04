@@ -24,9 +24,9 @@ type LoadHolder struct {
 
 var (
 	DefaultLoaders = []LoadHolder{
-		{Name: "default", Loader: defaultloader.New()},
-		{Name: "file", Loader: fileloader.New()},
-		{Name: "env", Loader: envloader.New()},
+		{Name: defaultloader.LoaderName, Loader: defaultloader.New()},
+		{Name: fileloader.LoaderName, Loader: fileloader.New()},
+		{Name: envloader.LoaderName, Loader: envloader.New()},
 	}
 	DefaultHooks = []loader.HookFunc{
 		loader.HookTimeDuration,

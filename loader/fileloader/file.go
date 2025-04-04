@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/rakunlabs/chu/loader"
 )
@@ -15,6 +16,8 @@ type Loader struct {
 	Decoders   map[string]Decoder
 	MapDecoder func(data any, to any) error
 }
+
+var LoaderName = "file"
 
 func New() *Loader {
 	return &Loader{
@@ -37,7 +40,7 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 		return fmt.Errorf("map decoder is not set %w", loader.ErrMissingOpt)
 	}
 
-	if path := os.Getenv("CONFIG_PATH"); path != "" {
+	if path := l.getEnv(opt.Name); path != "" {
 		if err := l.loadTo(ctx, path, to); err != nil {
 			return err
 		}
@@ -59,6 +62,18 @@ func (l Loader) LoadChu(ctx context.Context, to any, opts ...loader.Option) erro
 	}
 
 	return nil
+}
+
+func (l Loader) getEnv(name string) string {
+	if path := os.Getenv("CONFIG_PATH"); path != "" {
+		return path
+	}
+
+	if path := os.Getenv("CONFIG_PATH" + "_" + strings.ToUpper(name)); path != "" {
+		return path
+	}
+
+	return ""
 }
 
 func (l Loader) getPath(name string) string {

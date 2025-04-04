@@ -13,6 +13,8 @@ type Loader struct {
 	tagName string
 }
 
+var LoaderName = "default"
+
 func New(opts ...Option) *Loader {
 	opt := &option{
 		TagName: "default",

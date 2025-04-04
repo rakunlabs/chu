@@ -81,3 +81,21 @@ func WithLogger(logger logadapter.Adapter) Option {
 		o.Logger = logger
 	}
 }
+
+// WithLoaderNames sets the loaders inside default loaders use when loading the configuration.
+func WithLoaderNames(names ...string) Option {
+	return func(o *option) {
+		loaders := make([]LoadHolder, 0, len(names))
+		for _, name := range names {
+			for _, l := range o.Loaders {
+				if l.Name == name {
+					loaders = append(loaders, l)
+
+					break
+				}
+			}
+		}
+
+		o.Loaders = loaders
+	}
+}

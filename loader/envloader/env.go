@@ -19,6 +19,8 @@ type Loader struct {
 	prefix    string
 }
 
+var LoaderName = "env"
+
 func New(opts ...Option) *Loader {
 	opt := &option{
 		TagEnv:   "env",
