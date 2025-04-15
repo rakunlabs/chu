@@ -4,6 +4,9 @@ import (
 	"github.com/rakunlabs/logi/logadapter"
 
 	"github.com/rakunlabs/chu/loader"
+	"github.com/rakunlabs/chu/loader/defaultloader"
+	"github.com/rakunlabs/chu/loader/envloader"
+	"github.com/rakunlabs/chu/loader/fileloader"
 )
 
 type Option func(*option)
@@ -34,6 +37,43 @@ func (o *option) apply(opts ...Option) {
 func WithLoaders(loaders ...LoadHolder) Option {
 	return func(o *option) {
 		o.Loaders = loaders
+	}
+}
+
+func WithEnvLoaderOptions(opts ...envloader.Option) Option {
+	return func(o *option) {
+		for i, l := range o.Loaders {
+			if l.Name == envloader.LoaderName {
+				o.Loaders[i].Loader = envloader.New(opts...)
+
+				break
+			}
+		}
+	}
+}
+
+func WithDefaultLoaderOptions(opts ...defaultloader.Option) Option {
+	return func(o *option) {
+		for i, l := range o.Loaders {
+			if l.Name == defaultloader.LoaderName {
+				o.Loaders[i].Loader = defaultloader.New(opts...)
+
+				break
+			}
+		}
+	}
+}
+
+// WithFileLoaderOptions sets the file loader options.
+func WithFileLoaderOptions(opts ...fileloader.Option) Option {
+	return func(o *option) {
+		for i, l := range o.Loaders {
+			if l.Name == fileloader.LoaderName {
+				o.Loaders[i].Loader = fileloader.New(opts...)
+
+				break
+			}
+		}
 	}
 }
 

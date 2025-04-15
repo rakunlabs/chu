@@ -45,7 +45,7 @@ func TestLoader_Load(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := New()
+			l := New()()
 
 			t.Setenv("CONFIG_PATH", "testdata/config.yaml")
 

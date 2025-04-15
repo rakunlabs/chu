@@ -15,15 +15,17 @@ type Loader struct {
 
 var LoaderName = "default"
 
-func New(opts ...Option) *Loader {
-	opt := &option{
-		TagName: "default",
-	}
-	opt.apply(opts...)
+func New(opts ...Option) func() loader.Loader {
+	return func() loader.Loader {
+		opt := &option{
+			TagName: "default",
+		}
+		opt.apply(opts...)
 
-	return &Loader{
-		tagName: opt.TagName,
-		hooks:   opt.Hooks,
+		return &Loader{
+			tagName: opt.TagName,
+			hooks:   opt.Hooks,
+		}
 	}
 }
 

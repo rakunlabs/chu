@@ -19,11 +19,20 @@ type Loader struct {
 
 var LoaderName = "file"
 
-func New() *Loader {
-	return &Loader{
-		FileSuffix: []string{".toml", ".yaml", ".yml", ".json"},
-		Folders:    []string{"/etc"},
-		Decoders:   Decoders(),
+func New(opts ...Option) func() loader.Loader {
+	return func() loader.Loader {
+		opt := &option{
+			FileSuffix: []string{".toml", ".yaml", ".yml", ".json"},
+			Folders:    []string{"/etc"},
+			Decoders:   Decoders(),
+		}
+		opt.apply(opts...)
+
+		return &Loader{
+			FileSuffix: opt.FileSuffix,
+			Folders:    opt.Folders,
+			Decoders:   opt.Decoders,
+		}
 	}
 }
 

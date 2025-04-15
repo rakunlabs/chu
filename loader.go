@@ -13,13 +13,15 @@ import (
 	"github.com/rakunlabs/chu/utils/decodermap"
 )
 
-type Loader interface {
-	LoadChu(ctx context.Context, to any, opt *loader.Option) error
-}
-
 type LoadHolder struct {
 	Name   string
-	Loader Loader
+	Loader func() loader.Loader
+	Order  *Order
+}
+
+type Order struct {
+	Before string
+	After  string
 }
 
 var (
@@ -66,7 +68,8 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 	)
 
 	for _, l := range opt.Loaders {
-		if err := l.Loader.LoadChu(ctx, to, optLoader); err != nil {
+		chuLoader := l.Loader()
+		if err := chuLoader.LoadChu(ctx, to, optLoader); err != nil {
 			if errors.Is(err, loader.ErrSkipLoader) {
 				opt.Logger.Debug(err.Error(), "loader", l.Name)
 

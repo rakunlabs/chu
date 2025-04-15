@@ -21,21 +21,23 @@ type Loader struct {
 
 var LoaderName = "env"
 
-func New(opts ...Option) *Loader {
-	opt := &option{
-		TagEnv:   "env",
-		Tag:      "cfg",
-		EnvFiles: []string{".env"},
-	}
-	opt.apply(opts...)
+func New(opts ...Option) func() loader.Loader {
+	return func() loader.Loader {
+		opt := &option{
+			TagEnv:   "env",
+			Tag:      "cfg",
+			EnvFiles: []string{".env"},
+		}
+		opt.apply(opts...)
 
-	if envFile := os.Getenv("CONFIG_ENV_FILE"); envFile != "" {
-		opt.EnvFiles = append(opt.EnvFiles, envFile)
-	}
+		if envFile := os.Getenv("CONFIG_ENV_FILE"); envFile != "" {
+			opt.EnvFiles = append(opt.EnvFiles, envFile)
+		}
 
-	return &Loader{
-		envValues: opt.EnvHolder,
-		hooks:     opt.Hooks,
+		return &Loader{
+			envValues: opt.EnvHolder,
+			hooks:     opt.Hooks,
+		}
 	}
 }
 

@@ -207,7 +207,7 @@ func TestLoad(t *testing.T) {
 				t.Setenv(k, v)
 			}
 
-			e := New(tt.args.opts...)
+			e := New(tt.args.opts...)()
 			if err := e.LoadChu(t.Context(), tt.args.value, loader.NewOption()); (err != nil) != tt.wantErr {
 				t.Errorf("Load() error = %v, wantErr %v", err, tt.wantErr)
 			}
