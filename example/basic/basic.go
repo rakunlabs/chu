@@ -3,6 +3,7 @@ package basic
 import (
 	"context"
 	"log/slog"
+	"net"
 	"os"
 	"time"
 
@@ -24,6 +25,18 @@ type Config struct {
 
 	Fn      func()     `log:"false"` // cannot be loaded, result is <nil>
 	Channel <-chan int `log:"false"` // cannot be loaded, result is <nil>
+
+	// Special configuration
+	Special SpecialConfig `cfg:"special"`
+}
+
+type SpecialConfig struct {
+	Host string `cfg:"host" default:"localhost"`
+	Port string `cfg:"port" default:"8080"`
+}
+
+func (c *SpecialConfig) String() string {
+	return net.JoinHostPort(c.Host, c.Port)
 }
 
 func Load(ctx context.Context) {

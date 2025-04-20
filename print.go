@@ -3,6 +3,7 @@ package chu
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"strconv"
 	"time"
@@ -39,6 +40,12 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 	if !v.IsValid() {
 		return nil, nil
 	}
+
+	// Always check for overrideValue first
+	if newV, ok := overrideValue(v); ok {
+		return newV, nil
+	}
+
 	if v.Kind() == reflect.Ptr {
 		if v.IsNil() {
 			return nil, nil
@@ -46,10 +53,6 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 		return buildLoggableMap(ctx, v.Elem())
 	}
 	if v.Kind() == reflect.Struct {
-		if newV, ok := overrideValue(v); ok {
-			return newV, nil
-		}
-
 		m := make(map[string]any)
 		t := v.Type()
 		for i := 0; i < v.NumField(); i++ {
@@ -73,6 +76,9 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 				}
 			}
 			key := loader.TagValue(fieldType, "cfg")
+			if !field.IsValid() || (field.Kind() == reflect.Ptr && field.IsNil()) {
+				continue
+			}
 			val, err := buildLoggableMap(ctx, field)
 			if err != nil {
 				return nil, err
@@ -118,22 +124,34 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 	}
 
 	// For other types, return the value as interface{}
-	if newV, ok := overrideValue(v); ok {
-		return newV, nil
-	}
-
 	return v.Interface(), nil
 }
 
 func overrideValue(v reflect.Value) (any, bool) {
-	// For other types, return the value as interface{}
+	if v.Type().Implements(stringerType) {
+		return v.Interface().(fmt.Stringer).String(), true
+	}
+	// Check pointer receiver as well, even if not addressable
+	if v.CanAddr() {
+		vp := v.Addr()
+		if vp.Type().Implements(stringerType) {
+			return vp.Interface().(fmt.Stringer).String(), true
+		}
+	} else if v.Kind() == reflect.Struct {
+		// Create a pointer to a copy and check
+		vp := reflect.New(v.Type())
+		vp.Elem().Set(v)
+		if vp.Type().Implements(stringerType) {
+			return vp.Interface().(fmt.Stringer).String(), true
+		}
+	}
 	if v.Type() == durationReflectType {
 		return printDuration(v.Interface().(time.Duration)), true
 	}
-
 	return nil, false
 }
 
+var stringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
 var durationReflectType = reflect.TypeOf(time.Duration(0))
 
 type printDuration time.Duration
