@@ -2,7 +2,7 @@ package basic
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -32,8 +32,9 @@ func Load(ctx context.Context) {
 	_ = os.Setenv("DB_PASS", "password")
 
 	if err := chu.Load(ctx, "test", &cfg); err != nil {
-		log.Fatal(err)
+		slog.Error("failed to load config", "error", err)
+		return
 	}
 
-	log.Printf("config: %+v", cfg)
+	slog.Info("loaded configuration", "config", chu.Print(ctx, cfg))
 }

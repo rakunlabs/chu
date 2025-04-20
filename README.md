@@ -12,8 +12,9 @@ Define a struct to hold the configuration.
 
 ```go
 type Config struct {
-    Name string `cfg:"name"`
-    Age  int    `cfg:"age"`
+    Name string   `cfg:"name"`
+    Age  int      `cfg:"age"`
+    Secret string `cfg:"secret" log:"-"` // skip this field in chu.Print
 }
 ```
 
@@ -25,6 +26,8 @@ cfg := Config{}
 if err := chu.Load(ctx, "test", &cfg); err != nil {
     return fmt.Errorf("failed to load config: %w", err)
 }
+
+slog.Info("loaded configuration", "config", chu.Print(ctx, cfg))
 ```
 
 The configuration will be loaded from the following sources in order:  

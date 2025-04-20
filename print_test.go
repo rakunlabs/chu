@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestPrint(t *testing.T) {
@@ -42,8 +43,9 @@ func TestPrint(t *testing.T) {
 						APIKey string `cfg:"api_key" log:"false"`
 						Test   string `cfg:"test"`
 					} `cfg:"internal"`
-					Func    func()     `cfg:"func"`
-					Complex complex128 `cfg:"complex"`
+					Func    func()        `cfg:"func"`
+					Complex complex128    `cfg:"complex"`
+					Time    time.Duration `cfg:"time"`
 				}{
 					Name: "test",
 					Age:  18,
@@ -58,15 +60,16 @@ func TestPrint(t *testing.T) {
 					},
 					Func:    func() {},
 					Complex: complex(1, 2),
+					Time:    time.Hour * 2,
 				},
 			},
-			want:    `{"name":"test","age":18,"internal":{"test":{"test":"test"}}}`,
+			want:    `{"name":"test","age":18,"internal":{"test":{"test":"test"}},"time":"2h0m0s"}`,
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Print(t.Context(), tt.args.v)
+			got, err := PrintE(t.Context(), tt.args.v)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Print() error = %v, wantErr %v", err, tt.wantErr)
 				return
