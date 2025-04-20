@@ -111,28 +111,6 @@ func (l *Loader) Load(ctx context.Context, mountPath string, key string) (map[st
 	return secret.Data, nil
 }
 
-// Set sets a key in the vault.
-//   - first login to vault
-func (l *Loader) Set(ctx context.Context, mountPath string, key string, value map[string]interface{}) error {
-	_, err := l.client.KVv2(mountPath).Put(ctx, key, value)
-	if err != nil {
-		return fmt.Errorf("failed to set key: %w", err)
-	}
-
-	return nil
-}
-
-// Delete deletes a key from the vault.
-//   - first login to vault
-func (l *Loader) Delete(ctx context.Context, mountPath string, key string) error {
-	err := l.client.KVv2(mountPath).Delete(ctx, key)
-	if err != nil {
-		return fmt.Errorf("failed to delete key: %w", err)
-	}
-
-	return nil
-}
-
 func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 	if _, ok := loader.GetExistEnv("VAULT_ADDR", "VAULT_AGENT_ADDR"); !ok {
 		return fmt.Errorf("VAULT_ADDR or VAULT_AGENT_ADDR is required: %w", loader.ErrSkipLoader)

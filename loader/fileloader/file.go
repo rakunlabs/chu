@@ -17,8 +17,6 @@ type Loader struct {
 	MapDecoder func(data any, to any) error
 }
 
-var LoaderName = "file"
-
 func New(opts ...Option) func() loader.Loader {
 	return func() loader.Loader {
 		opt := &option{

@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
+	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
@@ -29,16 +29,16 @@ func main() {
 
 	slog.SetLogLoggerLevel(slog.LevelDebug)
 
-	log.Printf("EXAMPLE_NO: %d", n)
+	slog.Info(fmt.Sprintf("EXAMPLE_NO: %d", n))
 
 	v, ok := Examples[n]
 	if !ok {
-		log.Println("invalid example number")
+		slog.Error("invalid example number")
 
 		return
 	}
 
-	log.Printf("running example: %s", v.Name)
+	slog.Info(fmt.Sprintf("running example: %s", v.Name))
 	v.Fn(context.Background())
 }
 

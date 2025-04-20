@@ -4,15 +4,12 @@ import (
 	"github.com/rakunlabs/logi/logadapter"
 
 	"github.com/rakunlabs/chu/loader"
-	"github.com/rakunlabs/chu/loader/defaultloader"
-	"github.com/rakunlabs/chu/loader/envloader"
-	"github.com/rakunlabs/chu/loader/fileloader"
 )
 
 type Option func(*option)
 
 type option struct {
-	Loaders []LoadHolder
+	Loaders map[string]loader.LoadHolder
 	Hooks   []loader.HookFunc
 	Tag     string
 	// WeaklyIgnoreSeperator for map decoder option.
@@ -32,48 +29,9 @@ func (o *option) apply(opts ...Option) {
 	}
 }
 
-// WithLoaders sets the loaders to use when loading the configuration.
-//   - order matters
-func WithLoaders(loaders ...LoadHolder) Option {
+func WithLoader(name string, loader loader.LoadHolder) Option {
 	return func(o *option) {
-		o.Loaders = loaders
-	}
-}
-
-func WithEnvLoaderOptions(opts ...envloader.Option) Option {
-	return func(o *option) {
-		for i, l := range o.Loaders {
-			if l.Name == envloader.LoaderName {
-				o.Loaders[i].Loader = envloader.New(opts...)
-
-				break
-			}
-		}
-	}
-}
-
-func WithDefaultLoaderOptions(opts ...defaultloader.Option) Option {
-	return func(o *option) {
-		for i, l := range o.Loaders {
-			if l.Name == defaultloader.LoaderName {
-				o.Loaders[i].Loader = defaultloader.New(opts...)
-
-				break
-			}
-		}
-	}
-}
-
-// WithFileLoaderOptions sets the file loader options.
-func WithFileLoaderOptions(opts ...fileloader.Option) Option {
-	return func(o *option) {
-		for i, l := range o.Loaders {
-			if l.Name == fileloader.LoaderName {
-				o.Loaders[i].Loader = fileloader.New(opts...)
-
-				break
-			}
-		}
+		o.Loaders[name] = loader
 	}
 }
 
@@ -125,15 +83,12 @@ func WithLogger(logger logadapter.Adapter) Option {
 // WithLoaderNames sets the loaders inside default loaders use when loading the configuration.
 func WithLoaderNames(names ...string) Option {
 	return func(o *option) {
-		loaders := make([]LoadHolder, 0, len(names))
+		loaders := make(map[string]loader.LoadHolder, len(names))
 		for _, name := range names {
-			for _, l := range o.Loaders {
-				if l.Name == name {
-					loaders = append(loaders, l)
-
-					break
-				}
+			if _, ok := o.Loaders[name]; !ok {
+				continue
 			}
+			loaders[name] = o.Loaders[name]
 		}
 
 		o.Loaders = loaders

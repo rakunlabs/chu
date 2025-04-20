@@ -19,8 +19,6 @@ type Loader struct {
 	prefix    string
 }
 
-var LoaderName = "env"
-
 func New(opts ...Option) func() loader.Loader {
 	return func() loader.Loader {
 		opt := &option{

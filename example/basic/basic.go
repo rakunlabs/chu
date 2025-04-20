@@ -19,11 +19,11 @@ type Config struct {
 
 	// Database configuration
 	DB struct {
-		Pass string `cfg:"pass"` // DB_PASS environment variable
+		Pass string `cfg:"pass" log:"false"` // DB_PASS environment variable
 	}
 
-	Fn      func()     // cannot be loaded, result is <nil>
-	Channel <-chan int // cannot be loaded, result is <nil>
+	Fn      func()     `log:"false"` // cannot be loaded, result is <nil>
+	Channel <-chan int `log:"false"` // cannot be loaded, result is <nil>
 }
 
 func Load(ctx context.Context) {

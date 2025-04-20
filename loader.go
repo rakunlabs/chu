@@ -13,22 +13,11 @@ import (
 	"github.com/rakunlabs/chu/utils/decodermap"
 )
 
-type LoadHolder struct {
-	Name   string
-	Loader func() loader.Loader
-	Order  *Order
-}
-
-type Order struct {
-	Before string
-	After  string
-}
-
 var (
-	DefaultLoaders = []LoadHolder{
-		{Name: defaultloader.LoaderName, Loader: defaultloader.New()},
-		{Name: fileloader.LoaderName, Loader: fileloader.New()},
-		{Name: envloader.LoaderName, Loader: envloader.New()},
+	DefaultLoaders = map[string]loader.LoadHolder{
+		loader.NameDefault: {Loader: defaultloader.New(), Order: loader.DefaultOrderDefault},
+		loader.NameFile:    {Loader: fileloader.New(), Order: loader.DefaultOrderFile},
+		loader.NameEnv:     {Loader: envloader.New(), Order: loader.DefaultOrderEnv},
 	}
 	DefaultHooks = []loader.HookFunc{
 		loader.HookTimeDuration,
@@ -67,16 +56,20 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 		loader.WithLogger(opt.Logger),
 	)
 
-	for _, l := range opt.Loaders {
+	loaderNames := loader.OrderLoaders(opt.Loaders)
+
+	for _, name := range loaderNames {
+		l := opt.Loaders[name]
+
 		chuLoader := l.Loader()
 		if err := chuLoader.LoadChu(ctx, to, optLoader); err != nil {
 			if errors.Is(err, loader.ErrSkipLoader) {
-				opt.Logger.Debug(err.Error(), "loader", l.Name)
+				opt.Logger.Debug(err.Error(), "loader", name)
 
 				continue
 			}
 
-			return fmt.Errorf("config loader %s: %w", l.Name, err)
+			return fmt.Errorf("config loader %s: %w", name, err)
 		}
 	}
 

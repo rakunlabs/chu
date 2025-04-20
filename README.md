@@ -72,3 +72,8 @@ type Config struct {
     Age  int    `cfg:"age"`
 }
 ```
+
+## Other Loaders
+
+This loaders not enabled by default. You can use them by adding to the `Load` function.
+
