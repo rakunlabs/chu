@@ -61,6 +61,17 @@ type Config struct {
 
 Default supports _numbers_, _string_, _bool_, _time.Duration_ and pointer of that types.
 
+#### Http
+
+HTTP loader is used to load configuration from HTTP server.
+
+| Env Value          | Description                                                  | Default |
+| ------------------ | ------------------------------------------------------------ | ------- |
+| `CONFIG_HTTP_ADDR` | Prefix for the configuration, if not exist than skips loader | -       |
+
+It send `GET` request to the server with `CONFIG_HTTP_ADDR` env value with appending the name as path.  
+`204` or `404` response code will skip the loader, only accept `200` response code.
+
 #### File
 
 File loader is used to load configuration from file.
@@ -100,26 +111,6 @@ err := chu.Load(ctx, "my-app", &cfg,
 This loaders not enabled by default. Import the package to enable it.  
 Use `chu.WithLoaderOption` to set the loader options.  
 Or use `chu.WithLoader` to set the loaders manually.
-
-<details><summary>#### HTTP</summary>
-
-HTTP loader is used to load configuration from HTTP server.  
-This is not enabled by default.
-Enable HTTP loader importing the package.
-
-```go
-import (
-    _ "github.com/rakunlabs/chu/httploader"
-)
-```
-| Env Value          | Description                                                  | Default |
-| ------------------ | ------------------------------------------------------------ | ------- |
-| `CONFIG_HTTP_ADDR` | Prefix for the configuration, if not exist than skips loader | -       |
-
-It send `GET` request to the server with `CONFIG_HTTP_ADDR` env value with appending the name as path.  
-`204` or `404` response code will skip the loader, only accept `200` response code.
-
-</details>
 
 <details><summary>#### Vault</summary>
 

@@ -26,7 +26,7 @@ func Load(ctx context.Context) error {
 		return err
 	}
 
-	slog.Info("loaded configuration", "config", chu.Print(ctx, cfg))
+	slog.Info("loaded configuration", "config", chu.String(cfg))
 
 	return nil
 }

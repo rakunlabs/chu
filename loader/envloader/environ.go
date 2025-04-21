@@ -88,7 +88,7 @@ func sanitizeTag(tag string) string {
 	return strings.ReplaceAll(strings.ToUpper(tag), "-", "_")
 }
 
-func sanitizePrefix(prefix string, key string) string {
+func sanitizePrefix(prefix, key string) string {
 	key = sanitizeTag(key)
 	prefix = sanitizeTag(prefix)
 
@@ -96,5 +96,9 @@ func sanitizePrefix(prefix string, key string) string {
 		return key
 	}
 
-	return strings.TrimPrefix(key, prefix)
+	if strings.HasPrefix(key, prefix) {
+		return strings.TrimPrefix(key, prefix)
+	}
+
+	return ""
 }

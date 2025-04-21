@@ -14,6 +14,7 @@ import (
 	_ "github.com/rakunlabs/chu/loader/defaultloader"
 	_ "github.com/rakunlabs/chu/loader/envloader"
 	_ "github.com/rakunlabs/chu/loader/fileloader"
+	_ "github.com/rakunlabs/chu/loader/httploader"
 )
 
 var (

@@ -69,7 +69,7 @@ func TestPrint(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := PrintE(t.Context(), tt.args.v)
+			got, err := StringE(tt.args.v)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Print() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -1,7 +1,6 @@
 package chu
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -16,8 +15,8 @@ var stringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
 // Print is a function that takes a context and an interface{} value,
 // and returns a JSON representation of the value.
 //   - Uses "log" tag and "-" to skip fields or false to skip
-func PrintE(ctx context.Context, v any) (string, error) {
-	m, err := buildLoggableMap(ctx, reflect.ValueOf(v))
+func StringE(v any) (string, error) {
+	m, err := buildLoggableMap(reflect.ValueOf(v))
 	if err != nil {
 		return "", err
 	}
@@ -30,14 +29,14 @@ func PrintE(ctx context.Context, v any) (string, error) {
 	return string(b), nil
 }
 
-func Print(ctx context.Context, v any) string {
-	result, _ := PrintE(ctx, v)
+func String(v any) string {
+	result, _ := StringE(v)
 
 	return result
 }
 
 // buildLoggableMap recursively builds a map representation of v, skipping fields with log:"false" or log:"-".
-func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
+func buildLoggableMap(v reflect.Value) (any, error) {
 	if !v.IsValid() {
 		return nil, nil
 	}
@@ -52,7 +51,7 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 			return nil, nil
 		}
 
-		return buildLoggableMap(ctx, v.Elem())
+		return buildLoggableMap(v.Elem())
 	}
 
 	if v.Kind() == reflect.Struct {
@@ -79,7 +78,7 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 			if !field.IsValid() || (field.Kind() == reflect.Ptr && field.IsNil()) {
 				continue
 			}
-			val, err := buildLoggableMap(ctx, field)
+			val, err := buildLoggableMap(field)
 			if err != nil {
 				return nil, err
 			}
@@ -95,7 +94,7 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 			if item.Kind() == reflect.Func || item.Kind() == reflect.Chan || item.Kind() == reflect.UnsafePointer {
 				continue
 			}
-			val, err := buildLoggableMap(ctx, item)
+			val, err := buildLoggableMap(item)
 			if err != nil {
 				return nil, err
 			}
@@ -116,7 +115,7 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 			if val.Kind() == reflect.Func || val.Kind() == reflect.Chan || val.Kind() == reflect.UnsafePointer || val.Kind() == reflect.Uintptr || val.Kind() == reflect.Complex64 || val.Kind() == reflect.Complex128 {
 				continue
 			}
-			mappedVal, err := buildLoggableMap(ctx, val)
+			mappedVal, err := buildLoggableMap(val)
 			if err != nil {
 				return nil, err
 			}
