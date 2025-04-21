@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/vault/api"
 	"github.com/rakunlabs/chu/loader"
-	"github.com/rakunlabs/chu/utils/decodermap"
+	"github.com/rakunlabs/chu/utils/decoder"
 )
 
 type Loader struct {
@@ -139,9 +139,9 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error 
 	mapDecoder := opt.MapDecoder
 
 	if mapDecoder == nil {
-		mapDecoder = decodermap.New(
-			decodermap.WithTag(opt.Tag),
-			decodermap.WithHooks(opt.Hooks...),
+		mapDecoder = decoder.New(
+			decoder.WithTag(opt.Tag),
+			decoder.WithHooks(opt.Hooks...),
 		).Decode
 	}
 

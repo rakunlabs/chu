@@ -1,4 +1,4 @@
-package decoderfile
+package decoder
 
 import (
 	"encoding/json"
@@ -6,12 +6,10 @@ import (
 	"io"
 
 	"github.com/BurntSushi/toml"
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
-type Json struct{}
-
-func (Json) Decode(r io.Reader, to any) error {
+func DecodeJson(r io.Reader, to any) error {
 	decoder := json.NewDecoder(r)
 
 	if err := decoder.Decode(to); err != nil {
@@ -21,9 +19,7 @@ func (Json) Decode(r io.Reader, to any) error {
 	return nil
 }
 
-type Toml struct{}
-
-func (Toml) Decode(r io.Reader, to any) error {
+func DecodeToml(r io.Reader, to any) error {
 	decoder := toml.NewDecoder(r)
 
 	if _, err := decoder.Decode(to); err != nil {
@@ -33,9 +29,7 @@ func (Toml) Decode(r io.Reader, to any) error {
 	return nil
 }
 
-type Yaml struct{}
-
-func (Yaml) Decode(r io.Reader, to any) error {
+func DecodeYaml(r io.Reader, to any) error {
 	decoder := yaml.NewDecoder(r)
 
 	if err := decoder.Decode(to); err != nil {

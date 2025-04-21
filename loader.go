@@ -7,7 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/rakunlabs/chu/loader"
-	"github.com/rakunlabs/chu/utils/decodermap"
+	"github.com/rakunlabs/chu/utils/decoder"
 
 	// Enable default loaders.
 
@@ -40,11 +40,11 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 	}
 	opt.apply(opts...)
 
-	mapDecoder := decodermap.New(
-		decodermap.WithTag(opt.Tag),
-		decodermap.WithHooks(opt.Hooks...),
-		decodermap.WithWeaklyIgnoreSeperator(opt.WeaklyIgnoreSeperator),
-		decodermap.WithWeaklyDashUnderscore(opt.WeaklyDashUnderscore),
+	mapDecoder := decoder.New(
+		decoder.WithTag(opt.Tag),
+		decoder.WithHooks(opt.Hooks...),
+		decoder.WithWeaklyIgnoreSeperator(opt.WeaklyIgnoreSeperator),
+		decoder.WithWeaklyDashUnderscore(opt.WeaklyDashUnderscore),
 	).Decode
 
 	optLoader := loader.NewOption(

@@ -1,4 +1,4 @@
-package decodermap
+package decoder
 
 import (
 	"github.com/rakunlabs/chu/loader"

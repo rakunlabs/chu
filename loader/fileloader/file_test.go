@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/rakunlabs/chu/loader"
-	"github.com/rakunlabs/chu/utils/decodermap"
+	"github.com/rakunlabs/chu/utils/decoder"
 )
 
 func TestLoader_Load(t *testing.T) {
@@ -41,7 +41,7 @@ func TestLoader_Load(t *testing.T) {
 		},
 	}
 
-	mapDecoder := decodermap.New().Decode
+	mapDecoder := decoder.New().Decode
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

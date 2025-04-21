@@ -5,23 +5,19 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/rakunlabs/chu/utils/decoderfile"
+	"github.com/rakunlabs/chu/utils/decoder"
 )
 
 var ErrUnsupportedFileFormat = errors.New("unsupported file format")
 
-type Decoder interface {
-	Decode(r io.Reader, to any) error
-}
+type Decoder = func(r io.Reader, to any) error
 
 func Decoders() map[string]Decoder {
-	yamlDecoder := &decoderfile.Yaml{}
-
 	return map[string]Decoder{
-		".toml": &decoderfile.Toml{},
-		".yaml": yamlDecoder,
-		".yml":  yamlDecoder,
-		".json": &decoderfile.Json{},
+		".toml": decoder.DecodeToml,
+		".yaml": decoder.DecodeYaml,
+		".yml":  decoder.DecodeYaml,
+		".json": decoder.DecodeJson,
 	}
 }
 

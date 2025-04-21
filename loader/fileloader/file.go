@@ -112,7 +112,7 @@ func (l Loader) loadTo(_ context.Context, path string, to any) error {
 }
 
 func (l Loader) fileToMap(path string) (any, error) {
-	fileDecoder, err := l.getFileDecoder(filepath.Ext(path))
+	decoder, err := l.getFileDecoder(filepath.Ext(path))
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (l Loader) fileToMap(path string) (any, error) {
 		return nil, err
 	}
 
-	if err := fileDecoder.Decode(file, &mapping); err != nil {
+	if err := decoder(file, &mapping); err != nil {
 		return nil, err
 	}
 

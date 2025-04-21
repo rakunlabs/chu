@@ -4,6 +4,7 @@ go 1.24
 
 require (
 	github.com/BurntSushi/toml v1.5.0
+	github.com/goccy/go-yaml v1.17.1
 	github.com/hashicorp/consul/api v1.32.0
 	github.com/hashicorp/go-envparse v0.1.0
 	github.com/hashicorp/vault/api v1.16.0
@@ -12,7 +13,6 @@ require (
 	github.com/worldline-go/klient v0.9.8
 	github.com/worldline-go/struct2 v1.3.1
 	github.com/xhit/go-str2duration/v2 v2.1.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
