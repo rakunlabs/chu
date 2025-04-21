@@ -47,7 +47,7 @@ func TestLoader_Load(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			l := New()()
 
-			t.Setenv("CONFIG_PATH", "testdata/config.yaml")
+			t.Setenv("CONFIG_FILE", "testdata/config.yaml")
 
 			tt.args.opts = append([]loader.OptionFunc{
 				loader.WithMapDecoder(mapDecoder),
