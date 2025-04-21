@@ -41,7 +41,8 @@ __-__ Default
 __-__ File  
 __-__ Environment
 
-`chu.Print` print the configuration in a human-readable format, skipping the fields with `log:"-"` or `log:"false"` tag. It uses `fmt.Stringer` interface to print the configuration.
+`chu.Print` print the configuration in a human-readable format, skipping the fields `log:"false"` tag and value unless `1, t, T, TRUE, true, True` makes false.  
+Print use `fmt.Stringer` interface to print the configuration.
 
 ### Loaders
 
@@ -64,7 +65,7 @@ Default supports _numbers_, _string_, _bool_, _time.Duration_ and pointer of tha
 
 File loader is used to load configuration from file.
 
-First checking `CONFIG_PATH` env value and try current location to find in order of `.toml`, `.yaml`, `.yml`, `.json` extension with using given name.
+First checking `CONFIG_FILE` env value and try current location to find in order of `.toml`, `.yaml`, `.yml`, `.json` extension with using given name.
 
 #### Environment
 
@@ -94,6 +95,49 @@ err := chu.Load(ctx, "my-app", &cfg,
 )
 ```
 
-## Other Loaders
+### Other Loaders
 
-This loaders not enabled by default. You can use them by adding to the `DefaultLoaders` value.
+This loaders not enabled by default. Import the package to enable it.  
+Use `chu.WithLoaderOption` to set the loader options.  
+Or use `chu.WithLoader` to set the loaders manually.
+
+<details><summary>#### Vault</summary>
+
+Vault loader is used to load configuration from HashiCorp Vault.  
+This is not enabled by default.
+
+Enable Vault loader importing the package.
+
+```go
+import (
+    _ "github.com/rakunlabs/chu/vaultloader"
+)
+```
+
+| Env Value                       | Description                                          | Default              |
+| ------------------------------- | ---------------------------------------------------- | -------------------- |
+| `VAULT_SECRET_BASE_PATH`        | Prefix for the configuration, must given base        | -                    |
+| `VAULT_ADDR` `VAULT_AGENT_ADDR` | Vault server address, not exist than skips loader    | -                    |
+| `VAULT_ROLE_ID`                 | Role ID for AppRole authentication, for role login   | -                    |
+| `VAULT_SECRET_ID`               | Secret ID for AppRole authentication, for role login | -                    |
+| `VAULT_APPROLE_BASE_PATH`       | Base path for AppRole authentication, for role login | `auth/approle/login` |
+
+</details>
+
+<details><summary>#### Consul</summary>
+
+Consul loader is used to load configuration from HashiCorp Consul.  
+This is not enabled by default.
+
+Enable Consul loader importing the package.
+
+```go
+import (
+    _ "github.com/rakunlabs/chu/consulloader"
+)
+```
+
+| Env Value                   | Description                                        | Default |
+| --------------------------- | -------------------------------------------------- | ------- |
+| `CONSUL_CONFIG_PATH_PREFIX` | Prefix for the configuration                       | -       |
+| `CONSUL_HTTP_ADDR`          | Consul server address, not exist than skips loader | -       |

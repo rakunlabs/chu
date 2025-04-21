@@ -46,22 +46,20 @@ func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 		return fmt.Errorf("map decoder is not set %w", loader.ErrMissingOpt)
 	}
 
-	if path := l.getEnv(opt.Name); path != "" {
-		if err := l.loadTo(ctx, path, to); err != nil {
-			return err
+	path := l.getEnv(opt.Name)
+	if path == "" {
+		if opt.Name == "" {
+			return nil
 		}
 
-		return nil
+		path = l.getPath(opt.Name)
 	}
 
-	if opt.Name == "" {
-		return nil
-	}
-
-	path := l.getPath(opt.Name)
 	if path == "" {
 		return nil
 	}
+
+	opt.Logger.Info("config load file", "key", path)
 
 	if err := l.loadTo(ctx, path, to); err != nil {
 		return err
@@ -71,11 +69,11 @@ func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 }
 
 func (l Loader) getEnv(name string) string {
-	if path := os.Getenv("CONFIG_PATH" + "_" + strings.ToUpper(name)); path != "" {
+	if path := os.Getenv("CONFIG_FILE" + "_" + strings.ToUpper(name)); path != "" {
 		return path
 	}
 
-	if path := os.Getenv("CONFIG_PATH"); path != "" {
+	if path := os.Getenv("CONFIG_FILE"); path != "" {
 		return path
 	}
 

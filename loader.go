@@ -63,8 +63,6 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 		chuLoader := l.Loader()
 		if err := chuLoader.LoadChu(ctx, to, optLoader); err != nil {
 			if errors.Is(err, loader.ErrSkipLoader) {
-				opt.Logger.Debug(err.Error(), "loader", name)
-
 				continue
 			}
 

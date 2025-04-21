@@ -3,25 +3,28 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log/slog"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/rakunlabs/chu/example/basic"
+	"github.com/rakunlabs/chu/example/mix"
 )
 
-var Examples = map[int]Exampler{
-	1: {
+var Examples = map[string]Exampler{
+	"1": {
 		Name: "basic struct configuration",
 		Fn:   basic.Load,
+	},
+	"2": {
+		Name: "vault and consul configuration",
+		Fn:   mix.Load,
 	},
 }
 
 type Exampler struct {
 	Name string
-	Fn   func(context.Context)
+	Fn   func(context.Context) error
 }
 
 func main() {
@@ -29,7 +32,7 @@ func main() {
 
 	slog.SetLogLoggerLevel(slog.LevelDebug)
 
-	slog.Info(fmt.Sprintf("EXAMPLE_NO: %d", n))
+	slog.Info("EXAMPLE_NO: " + n)
 
 	v, ok := Examples[n]
 	if !ok {
@@ -38,17 +41,21 @@ func main() {
 		return
 	}
 
-	slog.Info(fmt.Sprintf("running example: %s", v.Name))
-	v.Fn(context.Background())
+	slog.Info("running example: " + v.Name)
+	if err := v.Fn(context.Background()); err != nil {
+		slog.Error("example", "error", err)
+
+		os.Exit(1)
+	}
 }
 
-func getNumber() int {
+func getNumber() string {
 	var (
-		n    int
+		n    string
 		help bool
 	)
 
-	flag.IntVar(&n, "number", 1, "example number")
+	flag.StringVar(&n, "number", "1", "example number")
 	flag.BoolVar(&help, "h", false, "show help")
 	flag.Parse()
 
@@ -58,14 +65,14 @@ func getNumber() int {
 		os.Exit(0)
 	}
 
-	if n == 0 {
+	if n == "" {
 		if v := strings.TrimSpace(os.Getenv("EXAMPLE_NO")); v != "" {
-			n, _ = strconv.Atoi(v)
+			n = v
 		}
 	}
 
-	if n == 0 {
-		n = 1
+	if n == "" {
+		n = "1"
 	}
 
 	return n

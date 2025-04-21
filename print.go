@@ -71,9 +71,6 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 			}
 			tag := loader.TagValueM(fieldType, "log")
 			if tag != nil {
-				if *tag == "-" {
-					continue
-				}
 				if v, _ := strconv.ParseBool(*tag); !v {
 					continue
 				}

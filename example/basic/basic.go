@@ -2,6 +2,7 @@ package basic
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net"
 	"os"
@@ -16,6 +17,7 @@ type Config struct {
 	Host    string `cfg:"host"     default:"localhost"`
 	Port    int    `cfg:"port"     default:"8080"`
 	PortPtr *int   `cfg:"port_ptr" default:"8080"`
+	Test    int    `cfg:"test"     default:"1"`
 
 	Duration    time.Duration  `cfg:"duration"     default:"1s"`
 	DurationPtr *time.Duration `cfg:"duration_ptr" default:"2s"`
@@ -26,7 +28,7 @@ type Config struct {
 	}
 
 	Fn      func()     `log:"false"` // cannot be loaded, result is <nil>
-	Channel <-chan int `log:"false"` // cannot be loaded, result is <nil>
+	Channel <-chan int // cannot be loaded, result is <nil>
 
 	// Special configuration
 	Special SpecialConfig `cfg:"special"`
@@ -41,19 +43,21 @@ func (c *SpecialConfig) String() string {
 	return net.JoinHostPort(c.Host, c.Port)
 }
 
-func Load(ctx context.Context) {
+func Load(ctx context.Context) error {
 	cfg := Config{}
 
 	_ = os.Setenv("MY_APP_DB_PASS", "password")
+	_ = os.Setenv("CONFIG_FILE", "basic/testdata/app.toml")
 
 	if err := chu.Load(ctx, "my-app", &cfg,
 		chu.WithLoaderOption(loader.NameEnv, envloader.New(
 			envloader.WithPrefix("MY_APP_"),
 		)),
 	); err != nil {
-		slog.Error("failed to load config", "error", err)
-		return
+		return fmt.Errorf("failed to load configuration: %w", err)
 	}
 
 	slog.Info("loaded configuration", "config", chu.Print(ctx, cfg))
+
+	return nil
 }

@@ -92,6 +92,10 @@ func (l *Loader) Load(ctx context.Context, key string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to get key: %w", err)
 	}
 
+	if pair == nil {
+		return nil, fmt.Errorf("key not found [%s]: %w", key, loader.ErrSkipLoader)
+	}
+
 	return pair.Value, nil
 }
 
@@ -105,14 +109,16 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error 
 	}
 
 	name := opt.Name
-	if prefix, _ := loader.GetExistEnv("CONFIG_CONSUL_PREFIX"); prefix != "" {
+	if prefix, _ := loader.GetExistEnv("CONSUL_CONFIG_PATH_PREFIX"); prefix != "" {
 		name = path.Join(prefix, name)
 	}
 
-	vRaw, err := l.Load(ctx, opt.Name)
+	vRaw, err := l.Load(ctx, name)
 	if err != nil {
 		return err
 	}
+
+	opt.Logger.Info("config load consul", "key", name)
 
 	var mapping any
 

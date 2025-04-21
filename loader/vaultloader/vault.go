@@ -107,6 +107,10 @@ func (l *Loader) Load(ctx context.Context, mountPath string, key string) (map[st
 	// Get the key
 	secret, err := l.client.KVv2(mountPath).Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, api.ErrSecretNotFound) {
+			return nil, fmt.Errorf("key not found: %w, %w", err, loader.ErrSkipLoader)
+		}
+
 		return nil, fmt.Errorf("failed to get key: %w", err)
 	}
 
@@ -118,9 +122,9 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error 
 		return fmt.Errorf("VAULT_ADDR or VAULT_AGENT_ADDR is required: %w", loader.ErrSkipLoader)
 	}
 
-	mountPath := os.Getenv("CONFIG_VAULT_PREFIX")
+	mountPath := os.Getenv("VAULT_SECRET_BASE_PATH")
 	if mountPath == "" {
-		return errors.New("CONFIG_VAULT_PREFIX is required as mount path")
+		return errors.New("VAULT_SECRET_BASE_PATH is required as mount path")
 	}
 
 	if err := l.Login(ctx); err != nil {
