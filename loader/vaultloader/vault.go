@@ -19,8 +19,10 @@ type Loader struct {
 	m sync.RWMutex
 }
 
-func New() *Loader {
-	return &Loader{}
+func New() func() loader.Loader {
+	return func() loader.Loader {
+		return &Loader{}
+	}
 }
 
 func (l *Loader) SetClient(c *api.Client) {

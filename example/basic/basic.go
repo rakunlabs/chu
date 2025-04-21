@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/rakunlabs/chu"
+	"github.com/rakunlabs/chu/loader"
+	"github.com/rakunlabs/chu/loader/envloader"
 )
 
 type Config struct {
@@ -20,7 +22,7 @@ type Config struct {
 
 	// Database configuration
 	DB struct {
-		Pass string `cfg:"pass" log:"false"` // DB_PASS environment variable
+		Pass string `cfg:"pass"` // DB_PASS environment variable
 	}
 
 	Fn      func()     `log:"false"` // cannot be loaded, result is <nil>
@@ -42,9 +44,13 @@ func (c *SpecialConfig) String() string {
 func Load(ctx context.Context) {
 	cfg := Config{}
 
-	_ = os.Setenv("DB_PASS", "password")
+	_ = os.Setenv("MY_APP_DB_PASS", "password")
 
-	if err := chu.Load(ctx, "test", &cfg); err != nil {
+	if err := chu.Load(ctx, "my-app", &cfg,
+		chu.WithLoaderOption(loader.NameEnv, envloader.New(
+			envloader.WithPrefix("MY_APP_"),
+		)),
+	); err != nil {
 		slog.Error("failed to load config", "error", err)
 		return
 	}

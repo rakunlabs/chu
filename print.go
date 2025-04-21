@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"time"
 
 	"github.com/rakunlabs/chu/loader"
 	"github.com/spf13/cast"
 )
+
+var stringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
 
 // Print is a function that takes a context and an interface{} value,
 // and returns a JSON representation of the value.
@@ -50,8 +51,10 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 		if v.IsNil() {
 			return nil, nil
 		}
+
 		return buildLoggableMap(ctx, v.Elem())
 	}
+
 	if v.Kind() == reflect.Struct {
 		m := make(map[string]any)
 		t := v.Type()
@@ -85,6 +88,7 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 			}
 			m[key] = val
 		}
+
 		return m, nil
 	}
 	if v.Kind() == reflect.Slice || v.Kind() == reflect.Array {
@@ -100,6 +104,7 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 			}
 			arr = append(arr, val)
 		}
+
 		return arr, nil
 	}
 	if v.Kind() == reflect.Map {
@@ -120,6 +125,7 @@ func buildLoggableMap(ctx context.Context, v reflect.Value) (any, error) {
 			}
 			m[keyStr] = mappedVal
 		}
+
 		return m, nil
 	}
 
@@ -145,20 +151,6 @@ func overrideValue(v reflect.Value) (any, bool) {
 			return vp.Interface().(fmt.Stringer).String(), true
 		}
 	}
-	if v.Type() == durationReflectType {
-		return printDuration(v.Interface().(time.Duration)), true
-	}
+
 	return nil, false
-}
-
-var stringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
-var durationReflectType = reflect.TypeOf(time.Duration(0))
-
-type printDuration time.Duration
-
-func (d printDuration) MarshalJSON() ([]byte, error) {
-	// Convert the duration to a string representation
-	durationStr := time.Duration(d).String()
-	// Marshal the string representation to JSON
-	return json.Marshal(durationStr)
 }

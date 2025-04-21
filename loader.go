@@ -7,19 +7,18 @@ import (
 	"log/slog"
 
 	"github.com/rakunlabs/chu/loader"
-	"github.com/rakunlabs/chu/loader/defaultloader"
-	"github.com/rakunlabs/chu/loader/envloader"
-	"github.com/rakunlabs/chu/loader/fileloader"
 	"github.com/rakunlabs/chu/utils/decodermap"
+
+	// Enable default loaders.
+
+	_ "github.com/rakunlabs/chu/loader/defaultloader"
+	_ "github.com/rakunlabs/chu/loader/envloader"
+	_ "github.com/rakunlabs/chu/loader/fileloader"
 )
 
 var (
-	DefaultLoaders = map[string]loader.LoadHolder{
-		loader.NameDefault: {Loader: defaultloader.New(), Order: loader.DefaultOrderDefault},
-		loader.NameFile:    {Loader: fileloader.New(), Order: loader.DefaultOrderFile},
-		loader.NameEnv:     {Loader: envloader.New(), Order: loader.DefaultOrderEnv},
-	}
-	DefaultHooks = []loader.HookFunc{
+	DefaultLoaders = loader.Loaders
+	DefaultHooks   = []loader.HookFunc{
 		loader.HookTimeDuration,
 	}
 	DefaultOptions = []Option{}

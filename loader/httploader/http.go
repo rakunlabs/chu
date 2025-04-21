@@ -21,18 +21,20 @@ type Loader struct {
 	Decode func(r io.Reader, to any) error
 }
 
-func New(opts ...klient.OptionClientFn) *Loader {
-	opts = append([]klient.OptionClientFn{
-		klient.WithDisableBaseURLCheck(true),
-	}, opts...)
+func New(opts ...klient.OptionClientFn) func() loader.Loader {
+	return func() loader.Loader {
+		opts = append([]klient.OptionClientFn{
+			klient.WithDisableBaseURLCheck(true),
+		}, opts...)
 
-	client, err := klient.New(opts...)
-	if err != nil {
-		panic(err)
-	}
+		client, err := klient.New(opts...)
+		if err != nil {
+			panic(err)
+		}
 
-	return &Loader{
-		client: client,
+		return &Loader{
+			client: client,
+		}
 	}
 }
 

@@ -35,6 +35,10 @@ func New(opts ...Option) func() loader.Loader {
 		return &Loader{
 			envValues: opt.EnvHolder,
 			hooks:     opt.Hooks,
+			tagEnv:    opt.TagEnv,
+			tag:       opt.Tag,
+			envFiles:  opt.EnvFiles,
+			prefix:    opt.Prefix,
 		}
 	}
 }

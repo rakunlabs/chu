@@ -28,12 +28,14 @@ type Loader struct {
 	Decode func(r io.Reader, to any) error
 }
 
-func New(opts ...Option) *Loader {
-	opt := option{}
-	opt.apply(opts...)
+func New(opts ...Option) func() loader.Loader {
+	return func() loader.Loader {
+		opt := option{}
+		opt.apply(opts...)
 
-	return &Loader{
-		Decode: opt.Decode,
+		return &Loader{
+			Decode: opt.Decode,
+		}
 	}
 }
 

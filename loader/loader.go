@@ -20,32 +20,34 @@ const (
 	NameDefault = "default"
 	NameConsul  = "consul"
 	NameVault   = "vault"
-	NameHttp    = "http"
+	NameHTTP    = "http"
 	NameFile    = "file"
 	NameEnv     = "env"
 )
 
+var Loaders = map[string]LoadHolder{}
+
 var (
-	DefaultOrderDefault = &Order{
-		Before: []string{NameConsul, NameVault, NameHttp, NameFile, NameEnv},
+	OrderDefault = &Order{
+		Before: []string{NameConsul, NameVault, NameHTTP, NameFile, NameEnv},
 	}
-	DefaultOrderConsul = &Order{
-		Before: []string{NameVault, NameHttp, NameFile, NameEnv},
+	OrderConsul = &Order{
+		Before: []string{NameVault, NameHTTP, NameFile, NameEnv},
 		After:  []string{NameDefault},
 	}
-	DefaultOrderVault = &Order{
-		Before: []string{NameHttp, NameFile, NameEnv},
+	OrderVault = &Order{
+		Before: []string{NameHTTP, NameFile, NameEnv},
 		After:  []string{NameDefault, NameConsul},
 	}
-	DefaultOrderHttp = &Order{
+	OrderHTTP = &Order{
 		Before: []string{NameFile, NameEnv},
 		After:  []string{NameDefault, NameConsul, NameVault},
 	}
-	DefaultOrderFile = &Order{
+	OrderFile = &Order{
 		Before: []string{NameEnv},
-		After:  []string{NameDefault, NameConsul, NameVault, NameHttp},
+		After:  []string{NameDefault, NameConsul, NameVault, NameHTTP},
 	}
-	DefaultOrderEnv = &Order{
-		After: []string{NameDefault, NameConsul, NameVault, NameHttp, NameFile},
+	OrderEnv = &Order{
+		After: []string{NameDefault, NameConsul, NameVault, NameHTTP, NameFile},
 	}
 )

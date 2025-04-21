@@ -35,6 +35,19 @@ func WithLoader(name string, loader loader.LoadHolder) Option {
 	}
 }
 
+// WithLoaderOption sets the loader option for the configuration.
+//   - name is the loader name
+//   - fn is the loader function
+//   - if the loader name is not exist, it will be ignored
+func WithLoaderOption(name string, fn func() loader.Loader) Option {
+	return func(o *option) {
+		if v, ok := o.Loaders[name]; ok {
+			v.Loader = fn
+			o.Loaders[name] = v
+		}
+	}
+}
+
 // WithHookSet sets the hooks for conversion.
 func WithHookSet(hooks ...loader.HookFunc) Option {
 	return func(o *option) {
