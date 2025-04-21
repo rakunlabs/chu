@@ -20,7 +20,7 @@ Define a struct to hold the configuration.
 type Config struct {
     Name string   `cfg:"name"`
     Age  int      `cfg:"age"`
-    Secret string `cfg:"secret" log:"-"` // skip this field in chu.Print
+    Secret string `cfg:"secret" log:"-"` // skip this field in chu.String
 }
 ```
 
@@ -33,7 +33,7 @@ if err := chu.Load(ctx, "test", &cfg); err != nil {
     return fmt.Errorf("failed to load config: %w", err)
 }
 
-slog.Info("loaded configuration", "config", chu.Print(ctx, cfg))
+slog.Info("loaded configuration", "config", chu.String(ctx, cfg))
 ```
 
 The configuration will be loaded from the following sources in order:  
@@ -41,8 +41,8 @@ __-__ Default
 __-__ File  
 __-__ Environment
 
-`chu.Print` print the configuration in a human-readable format, skipping the fields `log:"false"` tag and value unless `1, t, T, TRUE, true, True` makes false.  
-Print use `fmt.Stringer` interface to print the configuration.
+`chu.String` print the configuration in a human-readable format, skipping the fields `log:"false"` tag and value unless `1, t, T, TRUE, true, True` makes false.  
+String func use `fmt.Stringer` interface checks to print the configuration.
 
 ### Loaders
 
