@@ -1,4 +1,4 @@
-package envloader
+package loaderenv
 
 import "github.com/rakunlabs/chu/loader"
 

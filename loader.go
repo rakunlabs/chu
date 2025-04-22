@@ -11,10 +11,10 @@ import (
 
 	// Enable default loaders.
 
-	_ "github.com/rakunlabs/chu/loader/defaultloader"
-	_ "github.com/rakunlabs/chu/loader/envloader"
-	_ "github.com/rakunlabs/chu/loader/fileloader"
-	_ "github.com/rakunlabs/chu/loader/httploader"
+	_ "github.com/rakunlabs/chu/loader/loaderdefault"
+	_ "github.com/rakunlabs/chu/loader/loaderenv"
+	_ "github.com/rakunlabs/chu/loader/loaderfile"
+	_ "github.com/rakunlabs/chu/loader/loaderhttp"
 )
 
 var (

@@ -1,4 +1,4 @@
-package httploader
+package loaderhttp
 
 import (
 	"bytes"

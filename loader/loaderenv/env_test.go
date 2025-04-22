@@ -1,4 +1,4 @@
-package envloader
+package loaderenv
 
 import (
 	"reflect"

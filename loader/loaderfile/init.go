@@ -1,4 +1,4 @@
-package fileloader
+package loaderfile
 
 import "github.com/rakunlabs/chu/loader"
 

@@ -1,4 +1,4 @@
-package consulloader
+package loaderconsul
 
 import "github.com/rakunlabs/chu/loader"
 

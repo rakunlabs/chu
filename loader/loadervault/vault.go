@@ -1,4 +1,4 @@
-package vaultloader
+package loadervault
 
 import (
 	"context"

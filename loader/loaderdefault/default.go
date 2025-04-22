@@ -1,4 +1,4 @@
-package defaultloader
+package loaderdefault
 
 import (
 	"context"

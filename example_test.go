@@ -7,7 +7,7 @@ import (
 
 	"github.com/rakunlabs/chu"
 	"github.com/rakunlabs/chu/loader"
-	"github.com/rakunlabs/chu/loader/envloader"
+	"github.com/rakunlabs/chu/loader/loaderenv"
 )
 
 func ExampleLoad() {
@@ -19,7 +19,7 @@ func ExampleLoad() {
 	_ = os.Setenv("MY_APP_NAME", "another")
 	_ = os.Setenv("MY_APP_AGE", "70")
 
-	err := chu.Load(context.Background(), "my-app", &cfg, chu.WithLoaderOption(loader.NameEnv, envloader.New(envloader.WithPrefix("MY_APP_"))))
+	err := chu.Load(context.Background(), "my-app", &cfg, chu.WithLoaderOption(loader.NameEnv, loaderenv.New(loaderenv.WithPrefix("MY_APP_"))))
 	if err != nil {
 		fmt.Println("Error loading config:", err)
 		return

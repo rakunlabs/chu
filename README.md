@@ -102,8 +102,8 @@ When loading configuration, usable to change env loader's options.
 
 ```go
 err := chu.Load(ctx, "my-app", &cfg,
-    chu.WithLoaderOption(loader.NameEnv, envloader.New(
-        envloader.WithPrefix("MY_APP_"),
+    chu.WithLoaderOption(loader.NameEnv, loaderenv.New(
+        loaderenv.WithPrefix("MY_APP_"),
     )),
 )
 ```
@@ -123,7 +123,7 @@ Enable Vault loader importing the package.
 
 ```go
 import (
-    _ "github.com/rakunlabs/chu/vaultloader"
+    _ "github.com/rakunlabs/chu/loader/loadervault"
 )
 ```
 
@@ -146,7 +146,7 @@ Enable Consul loader importing the package.
 
 ```go
 import (
-    _ "github.com/rakunlabs/chu/consulloader"
+    _ "github.com/rakunlabs/chu/loader/loaderconsul"
 )
 ```
 

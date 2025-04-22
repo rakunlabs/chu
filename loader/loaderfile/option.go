@@ -1,4 +1,4 @@
-package fileloader
+package loaderfile
 
 type Option func(*option)
 
