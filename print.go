@@ -15,24 +15,39 @@ var stringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
 // Print is a function that takes a context and an interface{} value,
 // and returns a JSON representation of the value.
 //   - Uses "log" tag and "-" to skip fields or false to skip
-func StringE(v any) (string, error) {
+func MarshalJSONE(v any) ([]byte, error) {
 	m, err := buildLoggableMap(reflect.ValueOf(v))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	b, err := json.Marshal(m)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(b), nil
+	return b, nil
 }
 
-func String(v any) string {
-	result, _ := StringE(v)
+func MarshalJSON(v any) []byte {
+	result, _ := MarshalJSONE(v)
 
 	return result
+}
+
+func MarshalMapE(v any) (any, error) {
+	m, err := buildLoggableMap(reflect.ValueOf(v))
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
+func MarshalMap(v any) any {
+	m, _ := MarshalMapE(v)
+
+	return m
 }
 
 // buildLoggableMap recursively builds a map representation of v, skipping fields with log:"false" or log:"-".

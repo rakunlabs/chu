@@ -25,7 +25,7 @@ func ExampleLoad() {
 		return
 	}
 
-	fmt.Println(chu.String(cfg))
+	fmt.Printf("%s\n", chu.MarshalJSON(cfg))
 	// Output:
 	// {"age":70,"name":"another"}
 }

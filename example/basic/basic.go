@@ -24,7 +24,7 @@ type Config struct {
 
 	// Database configuration
 	DB struct {
-		Pass string `cfg:"pass"` // DB_PASS environment variable
+		Pass string `cfg:"pass" log:"-"` // DB_PASS environment variable
 	}
 
 	Fn      func()     `log:"false"` // cannot be loaded, result is <nil>
@@ -57,7 +57,7 @@ func Load(ctx context.Context) error {
 		return fmt.Errorf("failed to load configuration: %w", err)
 	}
 
-	slog.Info("loaded configuration", "config", chu.String(cfg))
+	slog.Info("loaded configuration", "config", chu.MarshalMap(cfg))
 
 	return nil
 }

@@ -20,7 +20,7 @@ Define a struct to hold the configuration.
 type Config struct {
     Name string   `cfg:"name"`
     Age  int      `cfg:"age"`
-    Secret string `cfg:"secret" log:"-"` // skip this field in chu.String
+    Secret string `cfg:"secret" log:"-"` // skip this field in chu.MarshalMap
 }
 ```
 
@@ -33,15 +33,16 @@ if err := chu.Load(ctx, "test", &cfg); err != nil {
     return fmt.Errorf("failed to load config: %w", err)
 }
 
-slog.Info("loaded configuration", "config", chu.String(ctx, cfg))
+slog.Info("loaded configuration", "config", chu.MarshalMap(ctx, cfg))
 ```
 
 The configuration will be loaded from the following sources in order:  
 __-__ Default  
 __-__ File  
+__-__ Http  
 __-__ Environment
 
-`chu.String` print the configuration in a human-readable format, skipping the fields `log:"false"` tag and value unless `1, t, T, TRUE, true, True` makes false.  
+`chu.MarshalMap` or `chu.MarshalJSON` print the configuration, skipping the fields `log:"false"` tag and value unless `1, t, T, TRUE, true, True` makes false.  
 String func use `fmt.Stringer` interface checks to print the configuration.
 
 ### Loaders
@@ -65,9 +66,10 @@ Default supports _numbers_, _string_, _bool_, _time.Duration_ and pointer of tha
 
 HTTP loader is used to load configuration from HTTP server.
 
-| Env Value          | Description                                                  | Default |
-| ------------------ | ------------------------------------------------------------ | ------- |
-| `CONFIG_HTTP_ADDR` | Prefix for the configuration, if not exist than skips loader | -       |
+| Env Value            | Description                                      | Default |
+| -------------------- | ------------------------------------------------ | ------- |
+| `CONFIG_HTTP_ADDR`   | HTTP server address, not exist than skips loader | -       |
+| `CONFIG_HTTP_PREFIX` | Prefix for the configuration                     | -       |
 
 It send `GET` request to the server with `CONFIG_HTTP_ADDR` env value with appending the name as path.  
 `204` or `404` response code will skip the loader, only accept `200` response code.

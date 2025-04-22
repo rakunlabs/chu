@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -46,13 +47,15 @@ func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 		return fmt.Errorf("map decoder is not set %w", loader.ErrMissingOpt)
 	}
 
-	path := l.getEnv(opt.Name)
+	name := path.Base(opt.Name)
+
+	path := l.getEnv(name)
 	if path == "" {
-		if opt.Name == "" {
+		if name == "" {
 			return nil
 		}
 
-		path = l.getPath(opt.Name)
+		path = l.getPath(name)
 	}
 
 	if path == "" {
@@ -69,8 +72,10 @@ func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 }
 
 func (l Loader) getEnv(name string) string {
-	if path := os.Getenv("CONFIG_FILE" + "_" + strings.ToUpper(name)); path != "" {
-		return path
+	if name != "" && (name != "." && name != "/") {
+		if path := os.Getenv("CONFIG_FILE" + "_" + strings.ToUpper(name)); path != "" {
+			return path
+		}
 	}
 
 	if path := os.Getenv("CONFIG_FILE"); path != "" {

@@ -40,7 +40,12 @@ func (l *Loader) load(ctx context.Context, name string) ([]byte, string, error) 
 		return nil, "", fmt.Errorf("CONFIG_HTTP_ADDR is required: %w", loader.ErrSkipLoader)
 	}
 
-	getURL = strings.TrimSuffix(getURL, "/") + "/" + strings.TrimPrefix(name, "/")
+	var prefix string
+	if v, ok := loader.GetExistEnv("CONFIG_HTTP_PREFIX"); ok {
+		prefix = strings.Trim(v, "/") + "/"
+	}
+
+	getURL = strings.TrimSuffix(getURL, "/") + "/" + prefix + strings.TrimPrefix(name, "/")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, getURL, nil)
 	if err != nil {
