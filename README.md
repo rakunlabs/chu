@@ -45,6 +45,8 @@ __-__ Environment
 `chu.MarshalMap` or `chu.MarshalJSON` print the configuration, skipping the fields `log:"false"` tag and value unless `1, t, T, TRUE, true, True` makes false.  
 String func use `fmt.Stringer` interface checks to print the configuration.
 
+`CONFIG_NAME_PREFIX` env value can be used to set the prefix for the configuration.
+
 ### Loaders
 
 Check [example](./example/) folder to see how to use loaders with different kind of configuration.

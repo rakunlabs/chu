@@ -58,8 +58,8 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 
 	loaderNames := loader.OrderLoaders(opt.Loaders)
 
-	for _, name := range loaderNames {
-		l := opt.Loaders[name]
+	for _, lName := range loaderNames {
+		l := opt.Loaders[lName]
 
 		chuLoader := l.Loader()
 		if err := chuLoader.LoadChu(ctx, to, optLoader); err != nil {
@@ -67,7 +67,7 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 				continue
 			}
 
-			return fmt.Errorf("config loader %s: %w", name, err)
+			return fmt.Errorf("config loader %s: %w", lName, err)
 		}
 	}
 

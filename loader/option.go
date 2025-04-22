@@ -2,6 +2,8 @@ package loader
 
 import (
 	"log/slog"
+	"os"
+	"strings"
 
 	"github.com/rakunlabs/logi/logadapter"
 )
@@ -30,6 +32,10 @@ func NewOption(opts ...OptionFunc) *Option {
 func (o *Option) apply(opts ...OptionFunc) {
 	for _, opt := range opts {
 		opt(o)
+	}
+
+	if v := os.Getenv("CONFIG_NAME_PREFIX"); v != "" {
+		o.Name = strings.Trim(strings.Trim(v, "/")+"/"+strings.Trim(o.Name, "/"), "/")
 	}
 }
 
