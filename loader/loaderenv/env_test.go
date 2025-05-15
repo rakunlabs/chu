@@ -170,6 +170,132 @@ func TestLoad(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "slice string",
+			args: args{
+				value: &struct {
+					Test []string `cfg:"test"`
+				}{},
+			},
+			env: map[string]string{
+				"TEST": "test,abc",
+			},
+			want: &struct {
+				Test []string `cfg:"test"`
+			}{
+				Test: []string{"test", "abc"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "slice string with _",
+			args: args{
+				value: &struct {
+					Test []string `cfg:"test"`
+				}{},
+			},
+			env: map[string]string{
+				"TEST_0": "test,123",
+			},
+			want: &struct {
+				Test []string `cfg:"test"`
+			}{
+				Test: []string{"test,123"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "slice numbers",
+			args: args{
+				value: &struct {
+					Test []int `cfg:"test"`
+				}{},
+			},
+			env: map[string]string{
+				"TEST": "4342,123",
+			},
+			want: &struct {
+				Test []int `cfg:"test"`
+			}{
+				Test: []int{4342, 123},
+			},
+			wantErr: false,
+		},
+		{
+			name: "map test",
+			args: args{
+				value: &struct {
+					Test map[string]string `cfg:"test"`
+				}{},
+			},
+			env: map[string]string{
+				"TEST_A": "test-1",
+				"TEST_B": "test-2",
+			},
+			want: &struct {
+				Test map[string]string `cfg:"test"`
+			}{
+				Test: map[string]string{
+					"A": "test-1",
+					"B": "test-2",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "map struct test",
+			args: args{
+				value: &struct {
+					Test map[string]struct {
+						Value string `cfg:"value"`
+					} `cfg:"test"`
+				}{},
+			},
+			env: map[string]string{
+				"TEST_A_VALUE": "test-1",
+				"TEST_B_VALUE": "test-2",
+			},
+			want: &struct {
+				Test map[string]struct {
+					Value string `cfg:"value"`
+				} `cfg:"test"`
+			}{
+				Test: map[string]struct {
+					Value string `cfg:"value"`
+				}{
+					"A": {Value: "test-1"},
+					"B": {Value: "test-2"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "map int struct test",
+			args: args{
+				value: &struct {
+					Test map[int]struct {
+						Value string `cfg:"value"`
+					} `cfg:"test"`
+				}{},
+			},
+			env: map[string]string{
+				"TEST_1_VALUE": "test-1",
+				"TEST_2_VALUE": "test-2",
+			},
+			want: &struct {
+				Test map[int]struct {
+					Value string `cfg:"value"`
+				} `cfg:"test"`
+			}{
+				Test: map[int]struct {
+					Value string `cfg:"value"`
+				}{
+					1: {Value: "test-1"},
+					2: {Value: "test-2"},
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "special type",
 			args: args{
 				value: &struct {
