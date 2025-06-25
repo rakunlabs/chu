@@ -11,19 +11,18 @@ type Map struct {
 
 func New(opts ...Option) *Map {
 	opt := &option{
+		WeaklyTypedInput:      true,
 		WeaklyIgnoreSeperator: true,
-		WeaklyDashUnderscore:  false,
+		WeaklyDashUnderscore:  true,
 		Tag:                   "cfg",
 	}
 	opt.apply(opts...)
 
-	hooks := convertHookFuncs(opt.Hooks)
-
 	return &Map{
 		decoder: struct2.Decoder{
 			TagName:               opt.Tag,
-			HooksDecode:           hooks,
-			WeaklyTypedInput:      true,
+			HooksDecode:           opt.Hooks,
+			WeaklyTypedInput:      opt.WeaklyTypedInput,
 			WeaklyIgnoreSeperator: opt.WeaklyIgnoreSeperator,
 			WeaklyDashUnderscore:  opt.WeaklyDashUnderscore,
 		},
@@ -34,25 +33,13 @@ func (m *Map) Decode(input, output any) error {
 	return m.decoder.Decode(input, output)
 }
 
-func convertHookFuncs(hooks []loader.HookFunc) []struct2.HookDecodeFunc {
-	if len(hooks) == 0 {
-		return nil
-	}
-
-	hookFuncs := make([]struct2.HookDecodeFunc, len(hooks))
-	for i, h := range hooks {
-		hookFuncs[i] = struct2.HookDecodeFunc(h)
-	}
-
-	return hookFuncs
-}
-
 type Option func(*option)
 
 type option struct {
 	Hooks                 []loader.HookFunc
 	WeaklyIgnoreSeperator bool
 	WeaklyDashUnderscore  bool
+	WeaklyTypedInput      bool
 	Tag                   string
 }
 
@@ -65,7 +52,7 @@ func (o *option) apply(opts ...Option) {
 // WithHooks sets the hooks for map to struct conversion.
 func WithHooks(hooks ...loader.HookFunc) Option {
 	return func(o *option) {
-		o.Hooks = hooks
+		o.Hooks = append(o.Hooks, hooks...)
 	}
 }
 
@@ -78,7 +65,7 @@ func WithWeaklyIgnoreSeperator(v bool) Option {
 }
 
 // WithWeaklyDashUnderscore sets the weakly dash underscore option.
-//   - default is false
+//   - default is true
 func WithWeaklyDashUnderscore(v bool) Option {
 	return func(o *option) {
 		o.WeaklyDashUnderscore = v
@@ -90,5 +77,13 @@ func WithWeaklyDashUnderscore(v bool) Option {
 func WithTag(tag string) Option {
 	return func(o *option) {
 		o.Tag = tag
+	}
+}
+
+// WithWeaklyTypedInput sets the weakly typed input option.
+//   - default is true
+func WithWeaklyTypedInput(v bool) Option {
+	return func(o *option) {
+		o.WeaklyTypedInput = v
 	}
 }

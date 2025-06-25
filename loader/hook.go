@@ -5,11 +5,12 @@ import (
 	"time"
 
 	"github.com/spf13/cast"
+	"github.com/worldline-go/struct2"
 	"github.com/xhit/go-str2duration/v2"
 )
 
 // HookFunc get input, output and data and return modified data.
-type HookFunc func(reflect.Type, reflect.Type, any) (any, error)
+type HookFunc = struct2.HookDecodeFunc
 
 // HookTimeDuration for time.Duration
 func HookTimeDuration(in reflect.Type, out reflect.Type, data any) (any, error) {
