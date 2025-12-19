@@ -86,7 +86,9 @@ First checking `CONFIG_FILE` env value and try current location to find in order
 
 Environment loader is used to load configuration from environment variables.
 
-`env` or `cfg` tag can usable for environment loader.
+`env` or `cfg` tag can usable for environment loader.  
+If you have `.env`, `.env.local` file in the current directory, it will be loaded automatically.  
+Add extra env file using `CONFIG_ENV_FILE` env value.
 
 ```go
 export NAME=John
@@ -104,6 +106,7 @@ When loading configuration, usable to change env loader's options.
 
 ```go
 err := chu.Load(ctx, "my-app", &cfg,
+    // now you need to set prefix "MY_APP_" for env variables
     chu.WithLoaderOption(loader.NameEnv, loaderenv.New(
         loaderenv.WithPrefix("MY_APP_"),
     )),

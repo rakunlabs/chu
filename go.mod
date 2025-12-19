@@ -9,7 +9,7 @@ require (
 	github.com/rakunlabs/logi v0.4.1
 	github.com/spf13/cast v1.10.0
 	github.com/worldline-go/klient v0.9.13
-	github.com/worldline-go/struct2 v1.3.1
+	github.com/worldline-go/struct2 v1.4.0
 	github.com/xhit/go-str2duration/v2 v2.1.0
 )
 

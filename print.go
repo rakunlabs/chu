@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-var stringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+var stringerType = reflect.TypeFor[fmt.Stringer]()
 
 // Print is a function that takes a context and an interface{} value,
 // and returns a JSON representation of the value.

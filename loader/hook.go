@@ -18,12 +18,10 @@ func HookTimeDuration(in reflect.Type, out reflect.Type, data any) (any, error) 
 		switch in.Kind() {
 		case reflect.String:
 			return str2duration.ParseDuration(data.(string))
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			reflect.Float32, reflect.Float64:
 			return time.Duration(cast.ToInt64(data)), nil
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			return time.Duration(cast.ToUint64(data)), nil
-		case reflect.Float32, reflect.Float64:
-			return time.Duration(cast.ToFloat64(data)), nil
 		}
 	}
 

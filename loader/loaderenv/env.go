@@ -3,6 +3,7 @@ package loaderenv
 import (
 	"context"
 	"errors"
+	"maps"
 	"os"
 	"reflect"
 	"strings"
@@ -18,6 +19,8 @@ type Loader struct {
 	hooks     []loader.HookFunc
 	envFiles  []string
 	prefix    string
+
+	envLoaded envHolder
 }
 
 func New(opts ...Option) func() loader.Loader {
@@ -25,7 +28,7 @@ func New(opts ...Option) func() loader.Loader {
 		opt := &option{
 			TagEnv:   "env",
 			Tag:      "cfg",
-			EnvFiles: []string{".env"},
+			EnvFiles: []string{".env", ".env.local"},
 		}
 		opt.apply(opts...)
 
@@ -72,15 +75,12 @@ func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 	}
 
 	envValues := getEnvValues(l.prefix)
-	for k, v := range envFileValues {
-		envValues[k] = v
-	}
 
-	for k, v := range l.envValues {
-		envValues[k] = v
-	}
+	l.envLoaded = make(map[string]string, len(envValues)+len(envFileValues)+len(l.envValues))
 
-	l.envValues = envValues
+	maps.Copy(l.envLoaded, envFileValues)
+	maps.Copy(l.envLoaded, envValues)
+	maps.Copy(l.envLoaded, l.envValues)
 
 	if err := l.walk(ctx, v, ""); err != nil {
 		return err
@@ -138,12 +138,12 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error
 }
 
 func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string) error {
-	if !l.envValues.IsExist(tag) {
+	if !l.envLoaded.IsExist(tag) {
 		return nil
 	}
 
 	// check direct exist
-	if value, ok := l.envValues[tag]; ok && len(l.hooks) > 0 {
+	if value, ok := l.envLoaded[tag]; ok && len(l.hooks) > 0 {
 		var valGet any
 		var err error
 
@@ -177,7 +177,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 	case reflect.Slice:
 		// Support slice of strings from env variable (e.g., "a,b,c")
 		elKind := field.Type().Elem().Kind()
-		value, ok := l.envValues[tag]
+		value, ok := l.envLoaded[tag]
 		if ok {
 			strVal := cast.ToString(value)
 			if strVal != "" {
@@ -207,7 +207,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 		}
 		// initialize slice if nil
 		if field.IsNil() {
-			maxValue := l.envValues.MaxValue(tag) + 1
+			maxValue := l.envLoaded.MaxValue(tag) + 1
 			field.Set(reflect.MakeSlice(field.Type(), maxValue, maxValue))
 		}
 		for j := range field.Len() {
@@ -220,7 +220,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 		keyType := field.Type().Key()
 		prefix := tag + "_"
 		result := reflect.MakeMap(field.Type())
-		for k := range l.envValues {
+		for k := range l.envLoaded {
 			if strings.HasPrefix(k, prefix) {
 				suffix := k[len(prefix):]
 				mapKeyStr := suffix
@@ -267,7 +267,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 		}
 		return nil
 	default:
-		value, ok := l.envValues[tag]
+		value, ok := l.envLoaded[tag]
 		if !ok {
 			return nil
 		}

@@ -92,9 +92,7 @@ func OrderLoaders(loaders map[string]LoadHolder) []string {
 		}
 	}
 
-	for _, name := range lastList {
-		ordered = append(ordered, name)
-	}
+	ordered = append(ordered, lastList...)
 
 	return ordered
 }

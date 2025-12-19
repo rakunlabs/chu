@@ -28,7 +28,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/rakunlabs/logi v0.4.1 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	github.com/worldline-go/struct2 v1.3.1 // indirect
+	github.com/worldline-go/struct2 v1.4.0 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/exp v0.0.0-20250808145144-a408d31f581a // indirect
 	golang.org/x/sys v0.35.0 // indirect

@@ -47,8 +47,8 @@ github.com/worldline-go/klient v0.9.13 h1:97T7Q9QLKK5u0FQ3IB8lqZVVu+I4IqCIQlylYZ
 github.com/worldline-go/klient v0.9.13/go.mod h1:vXemhPgwAc2ueG8n3ioNvbcCE3GIqHfVPLWGj18ZPII=
 github.com/worldline-go/logz v0.5.1 h1:jpbKUd1FbecEzs7/p1zFH7tFtQ5demmc89Fa2YTHL/Q=
 github.com/worldline-go/logz v0.5.1/go.mod h1:CbiHbwLTA6oKud62HbmfwG5fgSZ6ppVbkSdRv44X8Vc=
-github.com/worldline-go/struct2 v1.3.1 h1:YPO4PptJCM+Qu0i2qjHGpDjVVjANijD2XyDnyR6xIhw=
-github.com/worldline-go/struct2 v1.3.1/go.mod h1:WQ0q9deNrhnzWkWvrC1sIYc6SfziRsRCAwQBgS94T8E=
+github.com/worldline-go/struct2 v1.4.0 h1:81QtMoOyux9aVXjPeqaDPJQVb3y/akSWm0AjNjK7U2w=
+github.com/worldline-go/struct2 v1.4.0/go.mod h1:WQ0q9deNrhnzWkWvrC1sIYc6SfziRsRCAwQBgS94T8E=
 github.com/xhit/go-str2duration/v2 v2.1.0 h1:lxklc02Drh6ynqX+DdPyp5pCKLUQpRT8bp8Ydu2Bstc=
 github.com/xhit/go-str2duration/v2 v2.1.0/go.mod h1:ohY8p+0f07DiV6Em5LKB0s2YpLtXVyJfNt1+BlmyAsU=
 golang.org/x/net v0.42.0 h1:jzkYrhi3YQWD6MLBJcsklgQsoAcw89EcZbJw8Z614hs=

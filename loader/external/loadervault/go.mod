@@ -28,7 +28,7 @@ require (
 	github.com/rakunlabs/logi v0.4.1 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	github.com/worldline-go/struct2 v1.3.1 // indirect
+	github.com/worldline-go/struct2 v1.4.0 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
