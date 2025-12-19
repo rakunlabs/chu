@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/hashicorp/vault/api"
+
 	"github.com/rakunlabs/chu/loader"
 	"github.com/rakunlabs/chu/utils/decoder"
 )

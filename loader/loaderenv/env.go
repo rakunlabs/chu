@@ -57,7 +57,7 @@ func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 	}
 
 	v := reflect.ValueOf(to)
-	if v.Kind() != reflect.Ptr {
+	if v.Kind() != reflect.Pointer {
 		return errors.New("value is not a pointer")
 	}
 

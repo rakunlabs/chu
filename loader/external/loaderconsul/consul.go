@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/hashicorp/consul/api"
+
 	"github.com/rakunlabs/chu/loader"
 	"github.com/rakunlabs/chu/utils/decoder"
 )

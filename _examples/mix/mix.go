@@ -6,8 +6,8 @@ import (
 
 	"github.com/rakunlabs/chu"
 
-	_ "github.com/rakunlabs/chu/loader/loaderconsul"
-	_ "github.com/rakunlabs/chu/loader/loadervault"
+	_ "github.com/rakunlabs/chu/loader/external/loaderconsul"
+	_ "github.com/rakunlabs/chu/loader/external/loadervault"
 )
 
 type Config struct {
