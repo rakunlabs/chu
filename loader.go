@@ -61,8 +61,7 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 	for _, lName := range loaderNames {
 		l := opt.Loaders[lName]
 
-		chuLoader := l.Loader()
-		if err := chuLoader.LoadChu(ctx, to, optLoader); err != nil {
+		if err := l.Load(ctx, to, optLoader); err != nil {
 			if errors.Is(err, loader.ErrSkipLoader) {
 				continue
 			}

@@ -45,7 +45,7 @@ func TestLoader_Load(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := New()()
+			l := New()
 
 			t.Setenv("CONFIG_FILE", "testdata/config.yaml")
 
@@ -55,7 +55,7 @@ func TestLoader_Load(t *testing.T) {
 
 			opt := loader.NewOption(tt.args.opts...)
 
-			if err := l.LoadChu(tt.args.ctx, tt.args.to, opt); (err != nil) != tt.wantErr {
+			if err := l.Load(tt.args.ctx, tt.args.to, opt); (err != nil) != tt.wantErr {
 				t.Errorf("Loader.Load() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

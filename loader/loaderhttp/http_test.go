@@ -1,7 +1,6 @@
 package loaderhttp
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -48,14 +47,14 @@ func TestLoader_LoadChu(t *testing.T) {
 		loader.WithMapDecoder(mapDecoder),
 	)
 
-	l := New()()
-	err := l.LoadChu(context.Background(), cfg, opt)
+	l := New()
+	err := l.Load(t.Context(), cfg, opt)
 	if err != nil {
-		t.Fatalf("LoadChu() error = %v", err)
+		t.Fatalf("Load() error = %v", err)
 	}
 
 	want := &Config{Host: "testhost", Port: 1234}
 	if !reflect.DeepEqual(cfg, want) {
-		t.Errorf("LoadChu() = %#v, want %#v", cfg, want)
+		t.Errorf("Load() = %#v, want %#v", cfg, want)
 	}
 }

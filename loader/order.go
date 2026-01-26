@@ -4,44 +4,43 @@ import (
 	"slices"
 )
 
-func OrderLoaders(loaders map[string]LoadHolder) []string {
+func OrderLoaders(loaders map[LoaderName]Loader) []LoaderName {
 	// Build dependency graph
-	afterList := make(map[string][]string)
-	lastList := make([]string, 0)
-	inDegree := make(map[string]int)
+	afterList := make(map[LoaderName][]LoaderName)
+	lastList := make([]LoaderName, 0)
+	inDegree := make(map[LoaderName]int)
 
 	// Create afterList and inDegree maps
 	for name, l := range loaders {
 		empty := true
-		if l.Order != nil {
-			// Convert before to after
-			if len(l.Order.Before) > 0 {
-				for _, before := range l.Order.Before {
-					if _, ok := loaders[before]; !ok {
-						continue
-					}
 
-					if !slices.Contains(afterList[name], before) {
-						afterList[name] = append(afterList[name], before)
-						inDegree[before]++
-					}
-
-					empty = false
+		// Convert before to after
+		if len(l.LoadOrder().Before) > 0 {
+			for _, before := range l.LoadOrder().Before {
+				if _, ok := loaders[before]; !ok {
+					continue
 				}
+
+				if !slices.Contains(afterList[name], before) {
+					afterList[name] = append(afterList[name], before)
+					inDegree[before]++
+				}
+
+				empty = false
 			}
-			if len(l.Order.After) > 0 {
-				for _, after := range l.Order.After {
-					if _, ok := loaders[after]; !ok {
-						continue
-					}
-
-					if !slices.Contains(afterList[after], name) {
-						afterList[after] = append(afterList[after], name)
-						inDegree[name]++
-					}
-
-					empty = false
+		}
+		if len(l.LoadOrder().After) > 0 {
+			for _, after := range l.LoadOrder().After {
+				if _, ok := loaders[after]; !ok {
+					continue
 				}
+
+				if !slices.Contains(afterList[after], name) {
+					afterList[after] = append(afterList[after], name)
+					inDegree[name]++
+				}
+
+				empty = false
 			}
 		}
 
@@ -58,10 +57,10 @@ func OrderLoaders(loaders map[string]LoadHolder) []string {
 	}
 
 	// Kahn's algorithm for topological sort with name
-	var ordered []string
+	var ordered []LoaderName
 
-	queue := make([]string, 0, len(inDegree))
-	inDegreeKey := make([]string, 0, len(inDegree))
+	queue := make([]LoaderName, 0, len(inDegree))
+	inDegreeKey := make([]LoaderName, 0, len(inDegree))
 	for name := range inDegree {
 		inDegreeKey = append(inDegreeKey, name)
 	}

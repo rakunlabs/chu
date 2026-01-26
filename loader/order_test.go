@@ -1,42 +1,60 @@
 package loader
 
 import (
+	"context"
 	"reflect"
 	"testing"
 )
 
+type testLoader struct {
+	Name  LoaderName
+	Order Order
+}
+
+func (d testLoader) LoadName() LoaderName {
+	return d.Name
+}
+
+func (d testLoader) LoadOrder() Order {
+	return d.Order
+}
+
+func (d testLoader) Load(ctx context.Context, to any, opt *Option) error {
+	return nil
+}
+
 func Test_orderLoaders(t *testing.T) {
 	type args struct {
-		loaders map[string]LoadHolder
+		loaders map[LoaderName]Loader
 	}
 	tests := []struct {
 		name string
 		args args
-		want []string
+		want []LoaderName
 	}{
 		{
 			name: "simple line",
 			args: args{
-				loaders: map[string]LoadHolder{
-					"d": {},
-					"b": {
-						Order: &Order{After: []string{"a"}, Before: []string{"c"}},
+				loaders: map[LoaderName]Loader{
+					"d": testLoader{},
+					"b": testLoader{
+						Order: Order{After: []LoaderName{"a"}, Before: []LoaderName{"c"}},
 					},
-					"a": {
-						Order: &Order{Before: []string{"b"}},
+					"a": testLoader{
+						Order: Order{Before: []LoaderName{"b"}},
 					},
-					"c": {
-						Order: &Order{After: []string{"b", "a"}},
+					"c": testLoader{
+						Order: Order{After: []LoaderName{"b", "a"}},
 					},
-					"e": {
-						Order: &Order{Before: []string{"c"}},
+					"e": testLoader{
+						Order: Order{Before: []LoaderName{"c"}},
 					},
-					"f": {
-						Order: &Order{Before: []string{"e"}},
+					"f": testLoader{
+						Order: Order{Before: []LoaderName{"e"}},
 					},
 				},
 			},
-			want: []string{"a", "f", "b", "e", "c", "d"},
+			want: []LoaderName{"a", "f", "b", "e", "c", "d"},
 		},
 	}
 	for _, tt := range tests {

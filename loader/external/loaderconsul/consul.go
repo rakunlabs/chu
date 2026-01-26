@@ -28,15 +28,21 @@ type Loader struct {
 	Decode func(r io.Reader, to any) error
 }
 
-func New(opts ...Option) func() loader.Loader {
-	return func() loader.Loader {
-		opt := option{}
-		opt.apply(opts...)
+func New(opts ...Option) loader.Loader {
+	opt := option{}
+	opt.apply(opts...)
 
-		return &Loader{
-			Decode: opt.Decode,
-		}
+	return &Loader{
+		Decode: opt.Decode,
 	}
+}
+
+func (l *Loader) LoadName() loader.LoaderName {
+	return loader.NameConsul
+}
+
+func (l *Loader) LoadOrder() loader.Order {
+	return loader.OrderConsul
 }
 
 func (l *Loader) SetClient(c *api.Client) {
@@ -81,7 +87,7 @@ func (l *Loader) setClient() error {
 	return nil
 }
 
-func (l *Loader) Load(ctx context.Context, key string) ([]byte, error) {
+func (l *Loader) LoadKey(ctx context.Context, key string) ([]byte, error) {
 	if err := l.setClient(); err != nil {
 		return nil, err
 	}
@@ -99,7 +105,7 @@ func (l *Loader) Load(ctx context.Context, key string) ([]byte, error) {
 	return pair.Value, nil
 }
 
-func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
+func (l *Loader) Load(ctx context.Context, to any, opt *loader.Option) error {
 	if _, ok := loader.GetExistEnv("CONSUL_HTTP_ADDR"); !ok {
 		return fmt.Errorf("CONSUL_HTTP_ADDR is required: %w", loader.ErrSkipLoader)
 	}
@@ -113,7 +119,7 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error 
 		name = path.Join(prefix, name)
 	}
 
-	vRaw, err := l.Load(ctx, name)
+	vRaw, err := l.LoadKey(ctx, name)
 	if err != nil {
 		return err
 	}

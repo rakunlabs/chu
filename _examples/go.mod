@@ -49,7 +49,7 @@ require (
 	github.com/twmb/tlscfg v1.2.1 // indirect
 	github.com/worldline-go/klient v0.9.13 // indirect
 	github.com/worldline-go/logz v0.5.1 // indirect
-	github.com/worldline-go/struct2 v1.3.1 // indirect
+	github.com/worldline-go/struct2 v1.4.0 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
 	golang.org/x/exp v0.0.0-20250808145144-a408d31f581a // indirect

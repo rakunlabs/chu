@@ -17,20 +17,18 @@ type Loader struct {
 	client *klient.Client
 }
 
-func New(opts ...klient.OptionClientFn) func() loader.Loader {
-	return func() loader.Loader {
-		opts = append([]klient.OptionClientFn{
-			klient.WithDisableBaseURLCheck(true),
-		}, opts...)
+func New(opts ...klient.OptionClientFn) loader.Loader {
+	opts = append([]klient.OptionClientFn{
+		klient.WithDisableBaseURLCheck(true),
+	}, opts...)
 
-		client, err := klient.New(opts...)
-		if err != nil {
-			panic(err)
-		}
+	client, err := klient.New(opts...)
+	if err != nil {
+		panic(err)
+	}
 
-		return &Loader{
-			client: client,
-		}
+	return &Loader{
+		client: client,
 	}
 }
 
@@ -78,7 +76,7 @@ func (l *Loader) load(ctx context.Context, name string) ([]byte, string, error) 
 	return body, contentType, nil
 }
 
-func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
+func (l *Loader) Load(ctx context.Context, to any, opt *loader.Option) error {
 	vRaw, contentType, err := l.load(ctx, opt.Name)
 	if err != nil {
 		return err
@@ -108,4 +106,12 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error 
 	}
 
 	return nil
+}
+
+func (l *Loader) LoadName() loader.LoaderName {
+	return loader.NameHTTP
+}
+
+func (l *Loader) LoadOrder() loader.Order {
+	return loader.OrderHTTP
 }

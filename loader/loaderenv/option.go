@@ -5,12 +5,13 @@ import "github.com/rakunlabs/chu/loader"
 type Option func(*option)
 
 type option struct {
-	Hooks     []loader.HookFunc
-	EnvHolder envHolder
-	EnvFiles  []string
-	TagEnv    string
-	Tag       string
-	Prefix    string
+	Hooks              []loader.HookFunc
+	EnvHolder          envHolder
+	CheckConfigEnvFile bool
+	EnvFiles           []string
+	TagEnv             string
+	Tag                string
+	Prefix             string
 }
 
 func (o *option) apply(opts ...Option) {
@@ -61,5 +62,14 @@ func WithTag(tag string) Option {
 func WithPrefix(prefix string) Option {
 	return func(o *option) {
 		o.Prefix = prefix
+	}
+}
+
+// WithCheckConfigEnvFile enables checking CONFIG_ENV_FILE variable to load specific environment file.
+//   - if true and CONFIG_ENV_FILE is set, the file is appended to the list of env files to load.
+//   - default is true.
+func WithCheckConfigEnvFile(check bool) Option {
+	return func(o *option) {
+		o.CheckConfigEnvFile = check
 	}
 }

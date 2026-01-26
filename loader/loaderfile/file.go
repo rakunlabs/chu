@@ -12,33 +12,45 @@ import (
 )
 
 type Loader struct {
-	FileSuffix []string
-	Folders    []string
-	Decoders   map[string]Decoder
-	MapDecoder func(data any, to any) error
+	FileSuffix         []string
+	Folders            []string
+	Decoders           map[string]Decoder
+	CheckCurrentFolder bool
+	CheckEnv           bool
+	MapDecoder         func(data any, to any) error
 }
 
-func New(opts ...Option) func() loader.Loader {
-	return func() loader.Loader {
-		opt := &option{
-			FileSuffix: []string{".toml", ".yaml", ".yml", ".json"},
-			Folders:    []string{"/etc"},
-			Decoders:   Decoders(),
-		}
-		opt.apply(opts...)
-
-		return &Loader{
-			FileSuffix: opt.FileSuffix,
-			Folders:    opt.Folders,
-			Decoders:   opt.Decoders,
-		}
+func New(opts ...Option) loader.Loader {
+	opt := &option{
+		FileSuffix:         []string{".toml", ".yaml", ".yml", ".json"},
+		Folders:            []string{"/etc"},
+		Decoders:           Decoders(),
+		CheckCurrentFolder: true,
+		CheckEnv:           true,
 	}
+	opt.apply(opts...)
+
+	return &Loader{
+		FileSuffix:         opt.FileSuffix,
+		Folders:            opt.Folders,
+		Decoders:           opt.Decoders,
+		CheckCurrentFolder: opt.CheckCurrentFolder,
+		CheckEnv:           opt.CheckEnv,
+	}
+}
+
+func (l *Loader) LoadName() loader.LoaderName {
+	return loader.NameFile
+}
+
+func (l *Loader) LoadOrder() loader.Order {
+	return loader.OrderFile
 }
 
 // Load loads the configuration from the file.
 //   - first it checks the current directory after that it checks the etc folder.
 //   - CONFIG_PATH environment variable is used to determine the file path.
-func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
+func (l Loader) Load(ctx context.Context, to any, opt *loader.Option) error {
 	if l.MapDecoder == nil {
 		l.MapDecoder = opt.MapDecoder
 	}
@@ -72,6 +84,10 @@ func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
 }
 
 func (l Loader) getEnv(name string) string {
+	if !l.CheckEnv {
+		return ""
+	}
+
 	if name != "" && (name != "." && name != "/") {
 		if path := os.Getenv("CONFIG_FILE" + "_" + strings.ToUpper(name)); path != "" {
 			return path
@@ -87,10 +103,12 @@ func (l Loader) getEnv(name string) string {
 
 func (l Loader) getPath(name string) string {
 	// check current directory
-	for _, suffix := range l.FileSuffix {
-		path := name + suffix
-		if _, err := os.Stat(path); err == nil {
-			return path
+	if l.CheckCurrentFolder {
+		for _, suffix := range l.FileSuffix {
+			path := name + suffix
+			if _, err := os.Stat(path); err == nil {
+				return path
+			}
 		}
 	}
 

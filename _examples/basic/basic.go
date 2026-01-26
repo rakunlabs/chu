@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/rakunlabs/chu"
-	"github.com/rakunlabs/chu/loader"
 	"github.com/rakunlabs/chu/loader/loaderenv"
 )
 
@@ -50,7 +49,7 @@ func Load(ctx context.Context) error {
 	_ = os.Setenv("CONFIG_FILE", "basic/testdata/app.toml")
 
 	if err := chu.Load(ctx, "my-app", &cfg,
-		chu.WithLoaderOption(loader.NameEnv, loaderenv.New(
+		chu.WithLoaderOption(loaderenv.New(
 			loaderenv.WithPrefix("MY_APP_"),
 		)),
 	); err != nil {

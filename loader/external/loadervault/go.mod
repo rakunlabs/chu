@@ -6,7 +6,7 @@ replace github.com/rakunlabs/chu => ../../../
 
 require (
 	github.com/hashicorp/vault/api v1.22.0
-	github.com/rakunlabs/chu v0.3.0
+	github.com/rakunlabs/chu v0.4.0
 )
 
 require (

@@ -23,34 +23,43 @@ type Loader struct {
 	envLoaded envHolder
 }
 
-func New(opts ...Option) func() loader.Loader {
-	return func() loader.Loader {
-		opt := &option{
-			TagEnv:   "env",
-			Tag:      "cfg",
-			EnvFiles: []string{".env", ".env.local"},
-		}
-		opt.apply(opts...)
+func New(opts ...Option) loader.Loader {
+	opt := &option{
+		TagEnv:             "env",
+		Tag:                "cfg",
+		EnvFiles:           []string{".env", ".env.local"},
+		CheckConfigEnvFile: true,
+	}
+	opt.apply(opts...)
 
+	if opt.CheckConfigEnvFile {
 		if envFile := os.Getenv("CONFIG_ENV_FILE"); envFile != "" {
 			opt.EnvFiles = append(opt.EnvFiles, envFile)
 		}
-
-		return &Loader{
-			envValues: opt.EnvHolder,
-			hooks:     opt.Hooks,
-			tagEnv:    opt.TagEnv,
-			tag:       opt.Tag,
-			envFiles:  opt.EnvFiles,
-			prefix:    opt.Prefix,
-		}
 	}
+
+	return &Loader{
+		envValues: opt.EnvHolder,
+		hooks:     opt.Hooks,
+		tagEnv:    opt.TagEnv,
+		tag:       opt.Tag,
+		envFiles:  opt.EnvFiles,
+		prefix:    opt.Prefix,
+	}
+}
+
+func (l *Loader) LoadName() loader.LoaderName {
+	return loader.NameEnv
+}
+
+func (l *Loader) LoadOrder() loader.Order {
+	return loader.OrderEnv
 }
 
 // Load loads the configuration from the environment.
 //   - to must be a pointer to a struct
 //   - only struct fields load values
-func (l Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
+func (l Loader) Load(ctx context.Context, to any, opt *loader.Option) error {
 	if len(opt.Hooks) > 0 {
 		l.hooks = opt.Hooks
 	}

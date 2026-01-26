@@ -107,7 +107,7 @@ When loading configuration, usable to change env loader's options.
 ```go
 err := chu.Load(ctx, "my-app", &cfg,
     // now you need to set prefix "MY_APP_" for env variables
-    chu.WithLoaderOption(loader.NameEnv, loaderenv.New(
+    chu.WithLoaderOption(loaderenv.New(
         loaderenv.WithPrefix("MY_APP_"),
     )),
 )

@@ -20,10 +20,16 @@ type Loader struct {
 	m sync.RWMutex
 }
 
-func New() func() loader.Loader {
-	return func() loader.Loader {
-		return &Loader{}
-	}
+func New() loader.Loader {
+	return &Loader{}
+}
+
+func (l *Loader) LoadName() loader.LoaderName {
+	return loader.NameVault
+}
+
+func (l *Loader) LoadOrder() loader.Order {
+	return loader.OrderVault
 }
 
 func (l *Loader) SetClient(c *api.Client) {
@@ -102,9 +108,9 @@ func (l *Loader) Login(ctx context.Context) error {
 	return nil
 }
 
-// Load loads a key from the vault.
+// LoadKey loads a key from the vault.
 //   - first login to vault
-func (l *Loader) Load(ctx context.Context, mountPath string, key string) (map[string]interface{}, error) {
+func (l *Loader) LoadKey(ctx context.Context, mountPath string, key string) (map[string]interface{}, error) {
 	// Get the key
 	secret, err := l.client.KVv2(mountPath).Get(ctx, key)
 	if err != nil {
@@ -118,7 +124,7 @@ func (l *Loader) Load(ctx context.Context, mountPath string, key string) (map[st
 	return secret.Data, nil
 }
 
-func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error {
+func (l *Loader) Load(ctx context.Context, to any, opt *loader.Option) error {
 	if _, ok := loader.GetExistEnv("VAULT_ADDR", "VAULT_AGENT_ADDR"); !ok {
 		return fmt.Errorf("VAULT_ADDR or VAULT_AGENT_ADDR is required: %w", loader.ErrSkipLoader)
 	}
@@ -132,7 +138,7 @@ func (l *Loader) LoadChu(ctx context.Context, to any, opt *loader.Option) error 
 		return err
 	}
 
-	v, err := l.Load(ctx, mountPath, opt.Name)
+	v, err := l.LoadKey(ctx, mountPath, opt.Name)
 	if err != nil {
 		return err
 	}

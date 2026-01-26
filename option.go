@@ -9,7 +9,7 @@ import (
 type Option func(*option)
 
 type option struct {
-	Loaders map[string]loader.LoadHolder
+	Loaders map[loader.LoaderName]loader.Loader
 	Hooks   []loader.HookFunc
 	Tag     string
 	// WeaklyIgnoreSeperator for map decoder option.
@@ -29,21 +29,22 @@ func (o *option) apply(opts ...Option) {
 	}
 }
 
-func WithLoader(name string, loader loader.LoadHolder) Option {
+// WithLoader adds a loader to the configuration.
+func WithLoader(ld loader.Loader) Option {
 	return func(o *option) {
-		o.Loaders[name] = loader
+		o.Loaders[ld.LoadName()] = ld
 	}
 }
 
 // WithLoaderOption sets the loader option for the configuration.
-//   - name is the loader name
-//   - fn is the loader function
+//   - ld is the loader to set.
 //   - if the loader name is not exist, it will be ignored
-func WithLoaderOption(name string, fn func() loader.Loader) Option {
+func WithLoaderOption(ld loader.Loader) Option {
 	return func(o *option) {
-		if v, ok := o.Loaders[name]; ok {
-			v.Loader = fn
-			o.Loaders[name] = v
+		name := ld.LoadName()
+
+		if _, ok := o.Loaders[name]; ok {
+			o.Loaders[name] = ld
 		}
 	}
 }
@@ -94,9 +95,9 @@ func WithLogger(logger logadapter.Adapter) Option {
 }
 
 // WithLoaderNames sets the loaders inside default loaders use when loading the configuration.
-func WithLoaderNames(names ...string) Option {
+func WithLoaderNames(names ...loader.LoaderName) Option {
 	return func(o *option) {
-		loaders := make(map[string]loader.LoadHolder, len(names))
+		loaders := make(map[loader.LoaderName]loader.Loader, len(names))
 		for _, name := range names {
 			if _, ok := o.Loaders[name]; !ok {
 				continue
@@ -105,5 +106,14 @@ func WithLoaderNames(names ...string) Option {
 		}
 
 		o.Loaders = loaders
+	}
+}
+
+// WithDisableLoader disables a loader inside default loaders use when loading the configuration.
+func WithDisableLoader(names ...loader.LoaderName) Option {
+	return func(o *option) {
+		for _, name := range names {
+			delete(o.Loaders, name)
+		}
 	}
 }

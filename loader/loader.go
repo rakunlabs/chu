@@ -3,51 +3,54 @@ package loader
 import "context"
 
 type Loader interface {
-	LoadChu(ctx context.Context, to any, opt *Option) error
-}
-
-type LoadHolder struct {
-	Loader func() Loader
-	Order  *Order
+	Load(ctx context.Context, to any, opt *Option) error
+	LoadName() LoaderName
+	LoadOrder() Order
 }
 
 type Order struct {
-	Before []string
-	After  []string
+	Before []LoaderName
+	After  []LoaderName
 }
 
+type LoaderName string
+
 const (
-	NameDefault = "default"
-	NameConsul  = "consul"
-	NameVault   = "vault"
-	NameHTTP    = "http"
-	NameFile    = "file"
-	NameEnv     = "env"
+	NameDefault LoaderName = "default"
+	NameConsul  LoaderName = "consul"
+	NameVault   LoaderName = "vault"
+	NameHTTP    LoaderName = "http"
+	NameFile    LoaderName = "file"
+	NameEnv     LoaderName = "env"
 )
 
-var Loaders = map[string]LoadHolder{}
+var Loaders = map[LoaderName]Loader{}
+
+func Add(l Loader) {
+	Loaders[l.LoadName()] = l
+}
 
 var (
-	OrderDefault = &Order{
-		Before: []string{NameConsul, NameVault, NameHTTP, NameFile, NameEnv},
+	OrderDefault = Order{
+		Before: []LoaderName{NameConsul, NameVault, NameHTTP, NameFile, NameEnv},
 	}
-	OrderConsul = &Order{
-		Before: []string{NameVault, NameHTTP, NameFile, NameEnv},
-		After:  []string{NameDefault},
+	OrderConsul = Order{
+		Before: []LoaderName{NameVault, NameHTTP, NameFile, NameEnv},
+		After:  []LoaderName{NameDefault},
 	}
-	OrderVault = &Order{
-		Before: []string{NameHTTP, NameFile, NameEnv},
-		After:  []string{NameDefault, NameConsul},
+	OrderVault = Order{
+		Before: []LoaderName{NameHTTP, NameFile, NameEnv},
+		After:  []LoaderName{NameDefault, NameConsul},
 	}
-	OrderHTTP = &Order{
-		Before: []string{NameFile, NameEnv},
-		After:  []string{NameDefault, NameConsul, NameVault},
+	OrderHTTP = Order{
+		Before: []LoaderName{NameFile, NameEnv},
+		After:  []LoaderName{NameDefault, NameConsul, NameVault},
 	}
-	OrderFile = &Order{
-		Before: []string{NameEnv},
-		After:  []string{NameDefault, NameConsul, NameVault, NameHTTP},
+	OrderFile = Order{
+		Before: []LoaderName{NameEnv},
+		After:  []LoaderName{NameDefault, NameConsul, NameVault, NameHTTP},
 	}
-	OrderEnv = &Order{
-		After: []string{NameDefault, NameConsul, NameVault, NameHTTP, NameFile},
+	OrderEnv = Order{
+		After: []LoaderName{NameDefault, NameConsul, NameVault, NameHTTP, NameFile},
 	}
 )
