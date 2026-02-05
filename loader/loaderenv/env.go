@@ -115,18 +115,39 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error
 			}
 
 			fieldType := v.Type().Field(i)
-			tag := loader.TagValue(fieldType, l.tagEnv, l.tag)
-			if tag == "-" {
+
+			// Check if the tag is explicitly set
+			explicitTag := loader.TagValueM(fieldType, l.tagEnv, l.tag)
+			if explicitTag != nil && *explicitTag == "-" {
 				continue
 			}
 
+			// Check for squash option in tag (e.g., `cfg:",squash"` or `cfg:"name,squash"`)
+			hasSquash := explicitTag != nil && hasTagOption(*explicitTag, "squash")
+
+			var tag string
+
+			// Handle embedded (anonymous) structs or fields with squash option
+			// - don't add their name to the prefix unless they have an explicit non-squash tag
+			if (fieldType.Anonymous && explicitTag == nil) || hasSquash {
+				// For embedded structs without explicit tag or with squash option,
+				// walk into them using the current prefix (not adding the struct type name)
+				if err := l.walkEmbedded(ctx, field, prefix); err != nil {
+					return err
+				}
+				continue
+			}
+
+			// Get tag value (explicit tag or field name)
+			tagValue := loader.TagValue(fieldType, l.tagEnv, l.tag)
+
 			// always use uppercase tag
 			if prefix != "" && !strings.HasSuffix(prefix, "_") {
-				tag = prefix + "_" + sanitizeTag(tag)
+				tag = prefix + "_" + sanitizeTag(tagValue)
 			} else if prefix != "" {
-				tag = prefix + sanitizeTag(tag)
+				tag = prefix + sanitizeTag(tagValue)
 			} else {
-				tag = sanitizeTag(tag)
+				tag = sanitizeTag(tagValue)
 			}
 
 			if err := l.walkField(ctx, field, tag); err != nil {
@@ -144,6 +165,31 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error
 	}
 
 	return nil
+}
+
+// walkEmbedded handles embedded (anonymous) struct fields, walking into them
+// without adding the struct type name to the prefix.
+func (l *Loader) walkEmbedded(ctx context.Context, field reflect.Value, prefix string) error {
+	switch field.Kind() {
+	case reflect.Struct:
+		// Walk into the embedded struct using the same prefix
+		return l.walk(ctx, field, prefix)
+	case reflect.Ptr:
+		// For embedded pointer structs, check if we need to initialize it
+		if !l.envLoaded.IsExist(strings.TrimSuffix(prefix, "_")) {
+			return nil
+		}
+
+		if field.IsNil() {
+			field.Set(reflect.New(field.Type().Elem()))
+		}
+
+		// Walk into the dereferenced pointer using the same prefix
+		return l.walk(ctx, field.Elem(), prefix)
+	default:
+		// Shouldn't happen for valid embedded fields, but handle gracefully
+		return nil
+	}
 }
 
 func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string) error {
@@ -294,4 +340,20 @@ func splitAndTrim(s, sep string) []string {
 		parts[i] = strings.TrimSpace(parts[i])
 	}
 	return parts
+}
+
+// hasTagOption checks if a tag value contains a specific option.
+// Tag format: "name,option1,option2" or ",option1,option2"
+// Examples:
+//   - hasTagOption("host,squash", "squash") -> true
+//   - hasTagOption(",squash", "squash") -> true
+//   - hasTagOption("host", "squash") -> false
+func hasTagOption(tagValue, option string) bool {
+	parts := strings.Split(tagValue, ",")
+	for i := 1; i < len(parts); i++ { // Skip the first part (the name)
+		if strings.TrimSpace(parts[i]) == option {
+			return true
+		}
+	}
+	return false
 }

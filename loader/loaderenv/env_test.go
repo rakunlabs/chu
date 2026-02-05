@@ -8,6 +8,56 @@ import (
 	"github.com/rakunlabs/chu/loader"
 )
 
+// Types for embedded struct tests - defined at package level to ensure type identity
+type TestBaseConfig struct {
+	Host string `cfg:"host"`
+	Port int    `cfg:"port"`
+}
+
+type TestConfigWithEmbed struct {
+	TestBaseConfig
+	Name string `cfg:"name"`
+}
+
+type TestDeepConfig struct {
+	Debug bool `cfg:"debug"`
+}
+
+type TestBaseConfigNested struct {
+	TestDeepConfig
+	Host string `cfg:"host"`
+}
+
+type TestConfigNestedEmbed struct {
+	TestBaseConfigNested
+	Name string `cfg:"name"`
+}
+
+type TestBaseConfigSimple struct {
+	Host string `cfg:"host"`
+}
+
+type TestConfigWithExplicitTag struct {
+	TestBaseConfigSimple `cfg:"base"`
+	Name                 string `cfg:"name"`
+}
+
+type TestConfigWithEmbedPointer struct {
+	*TestBaseConfigSimple
+	Name string `cfg:"name"`
+}
+
+// Types for squash tag option tests
+type TestConfigWithSquash struct {
+	TestBaseConfig `cfg:",squash"`
+	Name           string `cfg:"name"`
+}
+
+type TestConfigWithSquashPointer struct {
+	*TestBaseConfigSimple `cfg:",squash"`
+	Name                  string `cfg:"name"`
+}
+
 func TestLoad(t *testing.T) {
 	type args struct {
 		value any
@@ -326,6 +376,116 @@ func TestLoad(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "embedded struct",
+			args: args{
+				value: &TestConfigWithEmbed{},
+			},
+			env: map[string]string{
+				"HOST": "localhost",
+				"PORT": "8080",
+				"NAME": "test-app",
+			},
+			want: &TestConfigWithEmbed{
+				TestBaseConfig: TestBaseConfig{
+					Host: "localhost",
+					Port: 8080,
+				},
+				Name: "test-app",
+			},
+			wantErr: false,
+		},
+		{
+			name: "nested embedded struct",
+			args: args{
+				value: &TestConfigNestedEmbed{},
+			},
+			env: map[string]string{
+				"DEBUG": "true",
+				"HOST":  "localhost",
+				"NAME":  "test-app",
+			},
+			want: &TestConfigNestedEmbed{
+				TestBaseConfigNested: TestBaseConfigNested{
+					TestDeepConfig: TestDeepConfig{
+						Debug: true,
+					},
+					Host: "localhost",
+				},
+				Name: "test-app",
+			},
+			wantErr: false,
+		},
+		{
+			name: "embedded struct with explicit tag",
+			args: args{
+				value: &TestConfigWithExplicitTag{},
+			},
+			env: map[string]string{
+				"BASE_HOST": "localhost",
+				"NAME":      "test-app",
+			},
+			want: &TestConfigWithExplicitTag{
+				TestBaseConfigSimple: TestBaseConfigSimple{
+					Host: "localhost",
+				},
+				Name: "test-app",
+			},
+			wantErr: false,
+		},
+		{
+			name: "embedded pointer struct",
+			args: args{
+				value: &TestConfigWithEmbedPointer{},
+			},
+			env: map[string]string{
+				"HOST": "localhost",
+				"NAME": "test-app",
+			},
+			want: &TestConfigWithEmbedPointer{
+				TestBaseConfigSimple: &TestBaseConfigSimple{
+					Host: "localhost",
+				},
+				Name: "test-app",
+			},
+			wantErr: false,
+		},
+		{
+			name: "squash tag option",
+			args: args{
+				value: &TestConfigWithSquash{},
+			},
+			env: map[string]string{
+				"HOST": "localhost",
+				"PORT": "8080",
+				"NAME": "test-app",
+			},
+			want: &TestConfigWithSquash{
+				TestBaseConfig: TestBaseConfig{
+					Host: "localhost",
+					Port: 8080,
+				},
+				Name: "test-app",
+			},
+			wantErr: false,
+		},
+		{
+			name: "squash tag option with pointer",
+			args: args{
+				value: &TestConfigWithSquashPointer{},
+			},
+			env: map[string]string{
+				"HOST": "localhost",
+				"NAME": "test-app",
+			},
+			want: &TestConfigWithSquashPointer{
+				TestBaseConfigSimple: &TestBaseConfigSimple{
+					Host: "localhost",
+				},
+				Name: "test-app",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -340,6 +500,59 @@ func TestLoad(t *testing.T) {
 
 			if !reflect.DeepEqual(tt.args.value, tt.want) {
 				t.Errorf("Load() = %#v, want %#v", tt.args.value, tt.want)
+			}
+		})
+	}
+}
+
+func Test_hasTagOption(t *testing.T) {
+	tests := []struct {
+		name     string
+		tagValue string
+		option   string
+		want     bool
+	}{
+		{
+			name:     "squash option present",
+			tagValue: ",squash",
+			option:   "squash",
+			want:     true,
+		},
+		{
+			name:     "squash option with name",
+			tagValue: "fieldname,squash",
+			option:   "squash",
+			want:     true,
+		},
+		{
+			name:     "squash option with multiple options",
+			tagValue: "fieldname,omitempty,squash",
+			option:   "squash",
+			want:     true,
+		},
+		{
+			name:     "no squash option",
+			tagValue: "fieldname",
+			option:   "squash",
+			want:     false,
+		},
+		{
+			name:     "empty tag",
+			tagValue: "",
+			option:   "squash",
+			want:     false,
+		},
+		{
+			name:     "different option",
+			tagValue: ",omitempty",
+			option:   "squash",
+			want:     false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := hasTagOption(tt.tagValue, tt.option); got != tt.want {
+				t.Errorf("hasTagOption() = %v, want %v", got, tt.want)
 			}
 		})
 	}

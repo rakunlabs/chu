@@ -1,12 +1,12 @@
 module github.com/rakunlabs/chu/loader/external/loadervault
 
-go 1.24
+go 1.24.0
 
 replace github.com/rakunlabs/chu => ../../../
 
 require (
 	github.com/hashicorp/vault/api v1.22.0
-	github.com/rakunlabs/chu v0.4.0
+	github.com/rakunlabs/chu v0.4.1
 )
 
 require (
