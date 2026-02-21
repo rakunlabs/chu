@@ -21,6 +21,9 @@ type Loader struct {
 	prefix    string
 
 	envLoaded envHolder
+	// envRaw holds unprefixed (raw) env vars for noprefix fallback lookups.
+	// Only populated when a prefix is set.
+	envRaw envHolder
 }
 
 func New(opts ...Option) loader.Loader {
@@ -91,14 +94,29 @@ func (l Loader) Load(ctx context.Context, to any, opt *loader.Option) error {
 	maps.Copy(l.envLoaded, envValues)
 	maps.Copy(l.envLoaded, l.envValues)
 
-	if err := l.walk(ctx, v, ""); err != nil {
+	// When a prefix is set, also load raw (unprefixed) env vars
+	// for fields with the "noprefix" tag option to fall back on.
+	if l.prefix != "" {
+		rawFileValues, err := getEnvValuesFromFiles(l.envFiles, "")
+		if err != nil {
+			return err
+		}
+
+		rawValues := getEnvValues("")
+
+		l.envRaw = make(map[string]string, len(rawValues)+len(rawFileValues))
+		maps.Copy(l.envRaw, rawFileValues)
+		maps.Copy(l.envRaw, rawValues)
+	}
+
+	if err := l.walk(ctx, v, "", false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error {
+func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string, noprefix bool) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -125,6 +143,9 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error
 			// Check for squash option in tag (e.g., `cfg:",squash"` or `cfg:"name,squash"`)
 			hasSquash := explicitTag != nil && hasTagOption(*explicitTag, "squash")
 
+			// Check for noprefix option in tag (e.g., `cfg:"host,noprefix"`)
+			fieldNoprefix := explicitTag != nil && hasTagOption(*explicitTag, "noprefix")
+
 			var tag string
 
 			// Handle embedded (anonymous) structs or fields with squash option
@@ -132,7 +153,7 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error
 			if (fieldType.Anonymous && explicitTag == nil) || hasSquash {
 				// For embedded structs without explicit tag or with squash option,
 				// walk into them using the current prefix (not adding the struct type name)
-				if err := l.walkEmbedded(ctx, field, prefix); err != nil {
+				if err := l.walkEmbedded(ctx, field, prefix, noprefix); err != nil {
 					return err
 				}
 				continue
@@ -140,6 +161,16 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error
 
 			// Get tag value (explicit tag or field name)
 			tagValue := loader.TagValue(fieldType, l.tagEnv, l.tag)
+
+			// Strip tag options (e.g., "host,noprefix" -> "host")
+			if idx := strings.Index(tagValue, ","); idx != -1 {
+				tagValue = tagValue[:idx]
+			}
+
+			// If name part is empty (e.g., ",noprefix"), fall back to field name
+			if tagValue == "" {
+				tagValue = fieldType.Name
+			}
 
 			// always use uppercase tag
 			if prefix != "" && !strings.HasSuffix(prefix, "_") {
@@ -150,7 +181,7 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error
 				tag = sanitizeTag(tagValue)
 			}
 
-			if err := l.walkField(ctx, field, tag); err != nil {
+			if err := l.walkField(ctx, field, tag, noprefix || fieldNoprefix); err != nil {
 				return err
 			}
 		}
@@ -161,7 +192,7 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error
 			tag = tag[:len(tag)-1]
 		}
 
-		return l.walkField(ctx, field, tag)
+		return l.walkField(ctx, field, tag, noprefix)
 	}
 
 	return nil
@@ -169,11 +200,11 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value, prefix string) error
 
 // walkEmbedded handles embedded (anonymous) struct fields, walking into them
 // without adding the struct type name to the prefix.
-func (l *Loader) walkEmbedded(ctx context.Context, field reflect.Value, prefix string) error {
+func (l *Loader) walkEmbedded(ctx context.Context, field reflect.Value, prefix string, noprefix bool) error {
 	switch field.Kind() {
 	case reflect.Struct:
 		// Walk into the embedded struct using the same prefix
-		return l.walk(ctx, field, prefix)
+		return l.walk(ctx, field, prefix, noprefix)
 	case reflect.Ptr:
 		// For embedded pointer structs, check if we need to initialize it
 		if !l.envLoaded.IsExist(strings.TrimSuffix(prefix, "_")) {
@@ -185,20 +216,34 @@ func (l *Loader) walkEmbedded(ctx context.Context, field reflect.Value, prefix s
 		}
 
 		// Walk into the dereferenced pointer using the same prefix
-		return l.walk(ctx, field.Elem(), prefix)
+		return l.walk(ctx, field.Elem(), prefix, noprefix)
 	default:
 		// Shouldn't happen for valid embedded fields, but handle gracefully
 		return nil
 	}
 }
 
-func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string) error {
+func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string, noprefix bool) error {
 	if !l.envLoaded.IsExist(tag) {
+		// If noprefix is set and not found in prefixed env, check raw env as fallback
+		if noprefix && l.envRaw != nil {
+			return l.walkFieldFrom(ctx, field, tag, l.envRaw, noprefix)
+		}
+
+		return nil
+	}
+
+	return l.walkFieldFrom(ctx, field, tag, l.envLoaded, noprefix)
+}
+
+// walkFieldFrom processes a field using the given env holder for lookups.
+func (l *Loader) walkFieldFrom(ctx context.Context, field reflect.Value, tag string, env envHolder, noprefix bool) error {
+	if !env.IsExist(tag) {
 		return nil
 	}
 
 	// check direct exist
-	if value, ok := l.envLoaded[tag]; ok && len(l.hooks) > 0 {
+	if value, ok := env[tag]; ok && len(l.hooks) > 0 {
 		var valGet any
 		var err error
 
@@ -218,7 +263,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 
 	switch field.Kind() {
 	case reflect.Struct:
-		if err := l.walk(ctx, field, tag+"_"); err != nil {
+		if err := l.walk(ctx, field, tag+"_", noprefix); err != nil {
 			return err
 		}
 	case reflect.Ptr:
@@ -226,13 +271,13 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 			field.Set(reflect.New(field.Type().Elem()))
 		}
 
-		if err := l.walk(ctx, field.Elem(), tag+"_"); err != nil {
+		if err := l.walk(ctx, field.Elem(), tag+"_", noprefix); err != nil {
 			return err
 		}
 	case reflect.Slice:
 		// Support slice of strings from env variable (e.g., "a,b,c")
 		elKind := field.Type().Elem().Kind()
-		value, ok := l.envLoaded[tag]
+		value, ok := env[tag]
 		if ok {
 			strVal := cast.ToString(value)
 			if strVal != "" {
@@ -262,11 +307,11 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 		}
 		// initialize slice if nil
 		if field.IsNil() {
-			maxValue := l.envLoaded.MaxValue(tag) + 1
+			maxValue := env.MaxValue(tag) + 1
 			field.Set(reflect.MakeSlice(field.Type(), maxValue, maxValue))
 		}
 		for j := range field.Len() {
-			if err := l.walk(ctx, field.Index(j), tag+"_"+cast.ToString(j)+"_"); err != nil {
+			if err := l.walk(ctx, field.Index(j), tag+"_"+cast.ToString(j)+"_", noprefix); err != nil {
 				return err
 			}
 		}
@@ -275,7 +320,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 		keyType := field.Type().Key()
 		prefix := tag + "_"
 		result := reflect.MakeMap(field.Type())
-		for k := range l.envLoaded {
+		for k := range env {
 			if strings.HasPrefix(k, prefix) {
 				suffix := k[len(prefix):]
 				mapKeyStr := suffix
@@ -306,11 +351,11 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 					if idx := strings.LastIndex(mapElemTag, "_"); idx != -1 {
 						structPrefix = mapElemTag[:idx+1]
 					}
-					if err := l.walk(ctx, mapElem, structPrefix); err != nil {
+					if err := l.walk(ctx, mapElem, structPrefix, noprefix); err != nil {
 						return err
 					}
 				} else {
-					if err := l.walkField(ctx, mapElem, mapElemTag); err != nil {
+					if err := l.walkFieldFrom(ctx, mapElem, mapElemTag, env, noprefix); err != nil {
 						return err
 					}
 				}
@@ -322,7 +367,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag string)
 		}
 		return nil
 	default:
-		value, ok := l.envLoaded[tag]
+		value, ok := env[tag]
 		if !ok {
 			return nil
 		}

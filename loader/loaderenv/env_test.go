@@ -486,6 +486,171 @@ func TestLoad(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "noprefix fallback to unprefixed env",
+			args: args{
+				value: &struct {
+					Host     string `cfg:"host"`
+					LogLevel string `cfg:"log_level,noprefix"`
+				}{},
+				opts: []Option{WithPrefix("APP_")},
+			},
+			env: map[string]string{
+				"APP_HOST":  "localhost",
+				"LOG_LEVEL": "debug",
+			},
+			want: &struct {
+				Host     string `cfg:"host"`
+				LogLevel string `cfg:"log_level,noprefix"`
+			}{
+				Host:     "localhost",
+				LogLevel: "debug",
+			},
+			wantErr: false,
+		},
+		{
+			name: "noprefix prefixed takes priority",
+			args: args{
+				value: &struct {
+					Host     string `cfg:"host"`
+					LogLevel string `cfg:"log_level,noprefix"`
+				}{},
+				opts: []Option{WithPrefix("APP_")},
+			},
+			env: map[string]string{
+				"APP_HOST":      "localhost",
+				"APP_LOG_LEVEL": "info",
+				"LOG_LEVEL":     "debug",
+			},
+			want: &struct {
+				Host     string `cfg:"host"`
+				LogLevel string `cfg:"log_level,noprefix"`
+			}{
+				Host:     "localhost",
+				LogLevel: "info",
+			},
+			wantErr: false,
+		},
+		{
+			name: "noprefix without prefix set works normally",
+			args: args{
+				value: &struct {
+					Host     string `cfg:"host"`
+					LogLevel string `cfg:"log_level,noprefix"`
+				}{},
+			},
+			env: map[string]string{
+				"HOST":      "localhost",
+				"LOG_LEVEL": "debug",
+			},
+			want: &struct {
+				Host     string `cfg:"host"`
+				LogLevel string `cfg:"log_level,noprefix"`
+			}{
+				Host:     "localhost",
+				LogLevel: "debug",
+			},
+			wantErr: false,
+		},
+		{
+			name: "noprefix field not found in either",
+			args: args{
+				value: &struct {
+					Host     string `cfg:"host"`
+					LogLevel string `cfg:"log_level,noprefix"`
+				}{},
+				opts: []Option{WithPrefix("APP_")},
+			},
+			env: map[string]string{
+				"APP_HOST": "localhost",
+			},
+			want: &struct {
+				Host     string `cfg:"host"`
+				LogLevel string `cfg:"log_level,noprefix"`
+			}{
+				Host: "localhost",
+			},
+			wantErr: false,
+		},
+		{
+			name: "normal field not affected by other noprefix fields",
+			args: args{
+				value: &struct {
+					Host     string `cfg:"host"`
+					LogLevel string `cfg:"log_level,noprefix"`
+				}{},
+				opts: []Option{WithPrefix("APP_")},
+			},
+			env: map[string]string{
+				"HOST":      "should-not-load",
+				"LOG_LEVEL": "debug",
+			},
+			want: &struct {
+				Host     string `cfg:"host"`
+				LogLevel string `cfg:"log_level,noprefix"`
+			}{
+				Host:     "",
+				LogLevel: "debug",
+			},
+			wantErr: false,
+		},
+		{
+			name: "noprefix with empty name uses field name",
+			args: args{
+				value: &struct {
+					Host     string `cfg:"host"`
+					LogLevel string `cfg:",noprefix"`
+				}{},
+				opts: []Option{WithPrefix("APP_")},
+			},
+			env: map[string]string{
+				"APP_HOST": "localhost",
+				"LOGLEVEL": "debug",
+			},
+			want: &struct {
+				Host     string `cfg:"host"`
+				LogLevel string `cfg:",noprefix"`
+			}{
+				Host:     "localhost",
+				LogLevel: "debug",
+			},
+			wantErr: false,
+		},
+		{
+			name: "noprefix with nested struct",
+			args: args{
+				value: &struct {
+					Host string `cfg:"host"`
+					DB   struct {
+						User     string `cfg:"user"`
+						Password string `cfg:"password,noprefix"`
+					} `cfg:"db,noprefix"`
+				}{},
+				opts: []Option{WithPrefix("APP_")},
+			},
+			env: map[string]string{
+				"APP_HOST":    "localhost",
+				"DB_USER":     "root",
+				"DB_PASSWORD": "secret",
+			},
+			want: &struct {
+				Host string `cfg:"host"`
+				DB   struct {
+					User     string `cfg:"user"`
+					Password string `cfg:"password,noprefix"`
+				} `cfg:"db,noprefix"`
+			}{
+				Host: "localhost",
+				DB: struct {
+					User     string `cfg:"user"`
+					Password string `cfg:"password,noprefix"`
+				}{
+					User:     "root",
+					Password: "secret",
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -546,6 +711,24 @@ func Test_hasTagOption(t *testing.T) {
 			name:     "different option",
 			tagValue: ",omitempty",
 			option:   "squash",
+			want:     false,
+		},
+		{
+			name:     "noprefix option present",
+			tagValue: "host,noprefix",
+			option:   "noprefix",
+			want:     true,
+		},
+		{
+			name:     "noprefix option without name",
+			tagValue: ",noprefix",
+			option:   "noprefix",
+			want:     true,
+		},
+		{
+			name:     "noprefix not present",
+			tagValue: "host",
+			option:   "noprefix",
 			want:     false,
 		},
 	}

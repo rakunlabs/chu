@@ -113,6 +113,16 @@ err := chu.Load(ctx, "my-app", &cfg,
 )
 ```
 
+Use the `noprefix` tag option on fields that should also check unprefixed env vars as a fallback.  
+The prefixed value takes priority when both exist.
+
+```go
+type Config struct {
+    AppName  string `cfg:"app_name"`              // only MY_APP_APP_NAME
+    LogLevel string `cfg:"log_level,noprefix"`    // MY_APP_LOG_LEVEL, falls back to LOG_LEVEL
+}
+```
+
 ### Other Loaders
 
 This loaders not enabled by default. Import the package to enable it.  
