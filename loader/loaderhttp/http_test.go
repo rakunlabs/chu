@@ -3,7 +3,6 @@ package loaderhttp
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"testing"
 
@@ -38,7 +37,7 @@ func TestLoader_LoadChu(t *testing.T) {
 	defer ts.Close()
 
 	// Set CONFIG_HTTP_ADDR to the test server's URL
-	os.Setenv("CONFIG_HTTP_ADDR", ts.URL)
+	t.Setenv("CONFIG_HTTP_ADDR", ts.URL)
 
 	cfg := &Config{}
 	mapDecoder := decoder.New().Decode

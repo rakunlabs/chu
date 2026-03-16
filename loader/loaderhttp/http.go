@@ -10,19 +10,15 @@ import (
 
 	"github.com/rakunlabs/chu/loader"
 	"github.com/rakunlabs/chu/utils/decoder"
-	"github.com/worldline-go/klient"
+	okclient "github.com/rakunlabs/ok"
 )
 
 type Loader struct {
-	client *klient.Client
+	client *okclient.Client
 }
 
-func New(opts ...klient.OptionClientFn) loader.Loader {
-	opts = append([]klient.OptionClientFn{
-		klient.WithDisableBaseURLCheck(true),
-	}, opts...)
-
-	client, err := klient.New(opts...)
+func New(opts ...okclient.OptionClientFn) loader.Loader {
+	client, err := okclient.New(opts...)
 	if err != nil {
 		panic(err)
 	}
@@ -38,12 +34,12 @@ func (l *Loader) load(ctx context.Context, name string) ([]byte, string, error) 
 		return nil, "", fmt.Errorf("CONFIG_HTTP_ADDR is required: %w", loader.ErrSkipLoader)
 	}
 
-	var prefix string
-	if v, ok := loader.GetExistEnv("CONFIG_HTTP_PREFIX"); ok {
-		prefix = strings.Trim(v, "/") + "/"
+	var suffix string
+	if v, ok := loader.GetExistEnv("CONFIG_HTTP_SUFFIX"); ok {
+		suffix = "/" + strings.Trim(v, "/")
 	}
 
-	getURL = strings.TrimSuffix(getURL, "/") + "/" + prefix + strings.TrimPrefix(name, "/")
+	getURL = strings.TrimSuffix(getURL, "/") + "/" + strings.Trim(name, "/") + suffix
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, getURL, nil)
 	if err != nil {
@@ -67,7 +63,7 @@ func (l *Loader) load(ctx context.Context, name string) ([]byte, string, error) 
 		case http.StatusNotFound, http.StatusNoContent:
 			return fmt.Errorf("file not found: %w", loader.ErrSkipLoader)
 		default:
-			return klient.ErrResponse(r)
+			return okclient.ErrResponse(r)
 		}
 	}); err != nil {
 		return nil, "", fmt.Errorf("failed to do request: %w", err)
