@@ -41,6 +41,10 @@ func (l *Loader) load(ctx context.Context, name string) ([]byte, string, error) 
 
 	getURL = strings.TrimSuffix(getURL, "/") + "/" + strings.Trim(name, "/") + suffix
 
+	if query, ok := loader.GetExistEnv("CONFIG_HTTP_QUERY"); ok && query != "" {
+		getURL += "?" + query
+	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, getURL, nil)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to create request: %w", err)

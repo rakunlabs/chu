@@ -68,10 +68,11 @@ Default supports _numbers_, _string_, _bool_, _time.Duration_ and pointer of tha
 
 HTTP loader is used to load configuration from HTTP server.
 
-| Env Value            | Description                                      | Default |
-| -------------------- | ------------------------------------------------ | ------- |
-| `CONFIG_HTTP_ADDR`   | HTTP server address, not exist than skips loader | -       |
-| `CONFIG_HTTP_SUFFIX` | Suffix for the configuration path                | -       |
+| Env Value            | Description                                                              | Default |
+| -------------------- | ------------------------------------------------------------------------ | ------- |
+| `CONFIG_HTTP_ADDR`   | HTTP server address, not exist than skips loader                         | -       |
+| `CONFIG_HTTP_SUFFIX` | Suffix for the configuration path                                        | -       |
+| `CONFIG_HTTP_QUERY`  | Query parameters appended to the request URL (e.g. `env=prod&region=us`) | -       |
 
 It send `GET` request to the server with `CONFIG_HTTP_ADDR` env value with appending the name as path.  
 `204` or `404` response code will skip the loader, only accept `200` response code.
