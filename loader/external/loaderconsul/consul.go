@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"path"
+	"strings"
 	"sync"
 
 	"github.com/hashicorp/consul/api"
@@ -76,7 +77,10 @@ func (l *Loader) setClient() error {
 	defer l.m.Unlock()
 
 	// Get a new client
-	client, err := api.NewClient(api.DefaultConfig())
+	cfg := api.DefaultConfig()
+	cfg.Address = strings.TrimRight(cfg.Address, "/")
+
+	client, err := api.NewClient(cfg)
 	if err != nil {
 		return fmt.Errorf("failed to create consul client: %w", err)
 	}
