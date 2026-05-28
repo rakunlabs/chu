@@ -21,6 +21,8 @@ type option struct {
 	WeaklyDashUnderscore bool
 	// Logger for logging.
 	Logger logadapter.Adapter
+	// Version of the application, used by some loaders (e.g. http loader as `version` query).
+	Version string
 }
 
 func (o *option) apply(opts ...Option) {
@@ -91,6 +93,15 @@ func WithWeaklyDashUnderscore(v bool) Option {
 func WithLogger(logger logadapter.Adapter) Option {
 	return func(o *option) {
 		o.Logger = logger
+	}
+}
+
+// WithVersion sets the version of the application.
+//   - Loaders may use it to fetch a specific configuration version.
+//   - HTTP loader appends it as `version=<version>` query when no `CONFIG_HTTP_QUERY` env is set.
+func WithVersion(version string) Option {
+	return func(o *option) {
+		o.Version = version
 	}
 }
 

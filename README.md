@@ -77,6 +77,14 @@ HTTP loader is used to load configuration from HTTP server.
 It send `GET` request to the server with `CONFIG_HTTP_ADDR` env value with appending the name as path.  
 `204` or `404` response code will skip the loader, only accept `200` response code.
 
+When `CONFIG_HTTP_QUERY` is not set, the loader falls back to `chu.WithVersion` and appends `?version=<version>` to the request URL.
+
+```go
+err := chu.Load(ctx, "my-app", &cfg,
+    chu.WithVersion("1.2.3"),
+)
+```
+
 #### File
 
 File loader is used to load configuration from file.

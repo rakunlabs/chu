@@ -13,6 +13,7 @@ type OptionFunc func(*Option)
 type Option struct {
 	Tag        string
 	Name       string
+	Version    string
 	Hooks      []HookFunc
 	MapDecoder func(input any, output any) error
 	Logger     logadapter.Adapter
@@ -75,5 +76,13 @@ func WithTag(tag string) OptionFunc {
 func WithLogger(logger logadapter.Adapter) OptionFunc {
 	return func(o *Option) {
 		o.Logger = logger
+	}
+}
+
+// WithVersion sets the application version.
+//   - Loaders may use it to fetch a specific configuration version.
+func WithVersion(version string) OptionFunc {
+	return func(o *Option) {
+		o.Version = version
 	}
 }

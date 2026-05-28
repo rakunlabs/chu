@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/rakunlabs/chu/loader"
@@ -28,7 +29,7 @@ func New(opts ...okclient.OptionClientFn) loader.Loader {
 	}
 }
 
-func (l *Loader) load(ctx context.Context, name string) ([]byte, string, error) {
+func (l *Loader) load(ctx context.Context, name, version string) ([]byte, string, error) {
 	getURL, ok := loader.GetExistEnv("CONFIG_HTTP_ADDR")
 	if getURL == "" || !ok {
 		return nil, "", fmt.Errorf("CONFIG_HTTP_ADDR is required: %w", loader.ErrSkipLoader)
@@ -43,6 +44,8 @@ func (l *Loader) load(ctx context.Context, name string) ([]byte, string, error) 
 
 	if query, ok := loader.GetExistEnv("CONFIG_HTTP_QUERY"); ok && query != "" {
 		getURL += "?" + query
+	} else if version != "" {
+		getURL += "?version=" + url.QueryEscape(version)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, getURL, nil)
@@ -77,7 +80,7 @@ func (l *Loader) load(ctx context.Context, name string) ([]byte, string, error) 
 }
 
 func (l *Loader) Load(ctx context.Context, to any, opt *loader.Option) error {
-	vRaw, contentType, err := l.load(ctx, opt.Name)
+	vRaw, contentType, err := l.load(ctx, opt.Name, opt.Version)
 	if err != nil {
 		return err
 	}

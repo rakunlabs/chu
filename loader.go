@@ -54,6 +54,7 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 		loader.WithTag(opt.Tag),
 		loader.WithMapDecoder(mapDecoder),
 		loader.WithLogger(opt.Logger),
+		loader.WithVersion(opt.Version),
 	)
 
 	loaderNames := loader.OrderLoaders(opt.Loaders)
