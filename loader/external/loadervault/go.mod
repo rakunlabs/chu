@@ -1,6 +1,6 @@
 module github.com/rakunlabs/chu/loader/external/loadervault
 
-go 1.24.0
+go 1.25
 
 replace github.com/rakunlabs/chu => ../../../
 

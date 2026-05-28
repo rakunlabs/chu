@@ -172,3 +172,79 @@ import (
 | `CONSUL_HTTP_ADDR`          | Consul server address, not exist than skips loader | -       |
 
 </details>
+
+<details><summary>#### GCP Parameter Manager</summary>
+
+GCP Parameter Manager loader is used to load configuration from Google Cloud Parameter Manager.  
+This is not enabled by default.
+
+Enable GCP Parameter Manager loader importing the package.
+
+```go
+import (
+    _ "github.com/rakunlabs/chu/loader/external/loadergcpparameter"
+)
+```
+
+| Env Value                | Description                                                            | Default  |
+| ------------------------ | ---------------------------------------------------------------------- | -------- |
+| `GCP_PROJECT_ID`         | GCP project id, not exist than skips loader (env > option)             | -        |
+| `GCP_PARAMETER_LOCATION` | Parameter Manager location                                             | `global` |
+| `GCP_PARAMETER_VERSION`  | Parameter version to render                                            | `latest` |
+
+It calls `RenderParameterVersion` so referenced secrets are resolved server-side.  
+The configuration name is used as the parameter id; `/` characters in the name are replaced with `-` because GCP parameter ids do not allow `/`.  
+Authentication uses Application Default Credentials (`GOOGLE_APPLICATION_CREDENTIALS`, workload identity, etc.).  
+Payload is decoded as YAML by default (JSON is a valid YAML subset).
+
+Project id can also be injected programmatically. The `GCP_PROJECT_ID` env var, when set, takes priority over the option.
+
+```go
+err := chu.Load(ctx, "my-app", &cfg,
+    chu.WithLoaderOption(loadergcpparameter.New(
+        loadergcpparameter.WithProjectID("my-gcp-project"),
+    )),
+)
+```
+
+</details>
+
+<details><summary>#### GCP Secret Manager</summary>
+
+GCP Secret Manager loader is used to load configuration from Google Cloud Secret Manager.  
+This is not enabled by default.
+
+Enable GCP Secret Manager loader importing the package.
+
+```go
+import (
+    _ "github.com/rakunlabs/chu/loader/external/loadergcpsecret"
+)
+```
+
+| Env Value               | Description                                                                                       | Default  |
+| ----------------------- | ------------------------------------------------------------------------------------------------- | -------- |
+| `GCP_PROJECT_ID`        | GCP project id, not exist than skips loader (env > option)                                        | -        |
+| `GCP_SECRET_LOCATION`   | Secret Manager location (use `global` or a region)                                                | `global` |
+| `GCP_SECRET_VERSION`    | Secret version to access                                                                          | `latest` |
+| `GCP_SECRET_ADDITIONAL` | Comma-separated list of shared secret ids loaded BEFORE the app secret (env > option), e.g. `generic,keycloak` | -        |
+
+It calls `AccessSecretVersion` to fetch the secret payload.  
+The configuration name is used as the secret id; `/` characters in the name are replaced with `-` because GCP secret ids do not allow `/`.  
+Authentication uses Application Default Credentials (`GOOGLE_APPLICATION_CREDENTIALS`, workload identity, etc.).  
+Payload is decoded as YAML by default (JSON is a valid YAML subset).
+
+Additional (shared/generic) secrets are loaded in order BEFORE the app-specific secret; later secrets override earlier ones. Missing additional secrets are silently skipped. If neither any additional nor the app-specific secret exists, the loader is skipped.
+
+Both project id and additional secrets can also be injected programmatically. The matching env var, when set, takes priority over the option.
+
+```go
+err := chu.Load(ctx, "my-app", &cfg,
+    chu.WithLoaderOption(loadergcpsecret.New(
+        loadergcpsecret.WithProjectID("my-gcp-project"),
+        loadergcpsecret.WithAdditionalSecrets("generic", "keycloak"),
+    )),
+)
+```
+
+</details>
