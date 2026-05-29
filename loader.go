@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
+	"strconv"
+	"strings"
 
 	"github.com/rakunlabs/chu/loader"
 	"github.com/rakunlabs/chu/utils/decoder"
@@ -60,6 +63,14 @@ func Load(ctx context.Context, name string, to any, opts ...Option) error {
 	loaderNames := loader.OrderLoaders(opt.Loaders)
 
 	for _, lName := range loaderNames {
+		if v, ok := os.LookupEnv("CONFIG_SET_" + strings.ToUpper(string(lName))); ok {
+			if enabled, err := strconv.ParseBool(v); err == nil && !enabled {
+				optLoader.Logger.Info("config loader disabled via env", "loader", lName)
+
+				continue
+			}
+		}
+
 		l := opt.Loaders[lName]
 
 		if err := l.Load(ctx, to, optLoader); err != nil {

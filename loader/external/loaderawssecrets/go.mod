@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.41.8
 	github.com/aws/aws-sdk-go-v2/config v1.32.19
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.41.8
-	github.com/rakunlabs/chu v0.4.6
+	github.com/rakunlabs/chu v0.4.7
 )
 
 require (

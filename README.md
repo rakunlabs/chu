@@ -132,6 +132,24 @@ type Config struct {
 }
 ```
 
+#### Loader toggles
+
+Every registered loader can be skipped with `CONFIG_SET_<LOADER_NAME>=false`.
+This is useful when an optional external backend is down and should not block
+startup. Unset, `true`, or invalid values keep the loader enabled.
+
+```sh
+CONFIG_SET_VAULT=false
+CONFIG_SET_CONSUL=false
+CONFIG_SET_AWSSECRETS=false
+```
+
+Loader names are uppercased from their registered names, for example:
+`CONFIG_SET_DEFAULT`, `CONFIG_SET_CONSUL`, `CONFIG_SET_AWSSSM`,
+`CONFIG_SET_AWSSECRETS`, `CONFIG_SET_AZUREKEYVAULT`, `CONFIG_SET_VAULT`,
+`CONFIG_SET_GCPPARAMETER`, `CONFIG_SET_GCPSECRET`, `CONFIG_SET_HTTP`,
+`CONFIG_SET_FILE`, `CONFIG_SET_ENV`.
+
 ### Other Loaders
 
 This loaders not enabled by default. Import the package to enable it.  
