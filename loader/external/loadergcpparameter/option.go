@@ -12,6 +12,10 @@ type opt struct {
 	Decode       func(r io.Reader, to any) error
 	ClientOption []option.ClientOption
 	ProjectID    string
+
+	// VersionFallback enables falling back to the most recently created
+	// enabled version when "latest" points to a disabled version.
+	VersionFallback bool
 }
 
 func (o *opt) apply(opts ...Option) {
@@ -40,5 +44,18 @@ func WithClientOption(opts ...option.ClientOption) Option {
 func WithProjectID(projectID string) Option {
 	return func(o *opt) {
 		o.ProjectID = projectID
+	}
+}
+
+// WithVersionFallback enables version fallback for the parameter loader.
+//
+// When enabled and the resolved version is "latest" (i.e. GCP_PARAMETER_VERSION
+// is unset), a disabled latest version no longer fails the load: the loader
+// lists the parameter versions and renders the most recently created enabled
+// version instead.
+//   - GCP_PARAMETER_FALLBACK env var takes priority over this option.
+func WithVersionFallback(enable bool) Option {
+	return func(o *opt) {
+		o.VersionFallback = enable
 	}
 }

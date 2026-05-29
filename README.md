@@ -194,11 +194,12 @@ import (
 )
 ```
 
-| Env Value                | Description                                                            | Default  |
-| ------------------------ | ---------------------------------------------------------------------- | -------- |
-| `GCP_PROJECT_ID`         | GCP project id, not exist than skips loader (env > option)             | -        |
-| `GCP_PARAMETER_LOCATION` | Parameter Manager location                                             | `global` |
-| `GCP_PARAMETER_VERSION`  | Parameter version to render                                            | `latest` |
+| Env Value                | Description                                                                                         | Default  |
+| ------------------------ | --------------------------------------------------------------------------------------------------- | -------- |
+| `GCP_PROJECT_ID`         | GCP project id, not exist than skips loader (env > option)                                          | -        |
+| `GCP_PARAMETER_LOCATION` | Parameter Manager location                                                                          | `global` |
+| `GCP_PARAMETER_VERSION`  | Parameter version to render                                                                         | `latest` |
+| `GCP_PARAMETER_FALLBACK` | When `latest` is disabled, fall back to the most recent enabled version (env > option), e.g. `true` | `false`  |
 
 It calls `RenderParameterVersion` so referenced secrets are resolved server-side.  
 The configuration name is used as the parameter id; `/` characters in the name are replaced with `-` because GCP parameter ids do not allow `/`.  
@@ -207,10 +208,13 @@ Payload is decoded as YAML by default (JSON is a valid YAML subset).
 
 Project id can also be injected programmatically. The `GCP_PROJECT_ID` env var, when set, takes priority over the option.
 
+By default, when `GCP_PARAMETER_VERSION` is unset (`latest`) and that latest version is disabled, the render fails. Enable version fallback to instead render the most recently created enabled version (selected by create time, since parameter version ids are arbitrary strings). Fallback only applies to `latest`; an explicit version is never overridden. The `GCP_PARAMETER_FALLBACK` env var, when set, takes priority over the option.
+
 ```go
 err := chu.Load(ctx, "my-app", &cfg,
     chu.WithLoaderOption(loadergcpparameter.New(
         loadergcpparameter.WithProjectID("my-gcp-project"),
+        loadergcpparameter.WithVersionFallback(true),
     )),
 )
 ```
@@ -230,11 +234,11 @@ import (
 )
 ```
 
-| Env Value               | Description                                                                                       | Default  |
-| ----------------------- | ------------------------------------------------------------------------------------------------- | -------- |
-| `GCP_PROJECT_ID`        | GCP project id, not exist than skips loader (env > option)                                        | -        |
-| `GCP_SECRET_LOCATION`   | Secret Manager location (use `global` or a region)                                                | `global` |
-| `GCP_SECRET_VERSION`    | Secret version to access                                                                          | `latest` |
+| Env Value               | Description                                                                                                    | Default  |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------- | -------- |
+| `GCP_PROJECT_ID`        | GCP project id, not exist than skips loader (env > option)                                                     | -        |
+| `GCP_SECRET_LOCATION`   | Secret Manager location (use `global` or a region)                                                             | `global` |
+| `GCP_SECRET_VERSION`    | Secret version to access                                                                                       | `latest` |
 | `GCP_SECRET_ADDITIONAL` | Comma-separated list of shared secret ids loaded BEFORE the app secret (env > option), e.g. `generic,keycloak` | -        |
 
 It calls `AccessSecretVersion` to fetch the secret payload.  
@@ -251,6 +255,115 @@ err := chu.Load(ctx, "my-app", &cfg,
     chu.WithLoaderOption(loadergcpsecret.New(
         loadergcpsecret.WithProjectID("my-gcp-project"),
         loadergcpsecret.WithAdditionalSecrets("generic", "keycloak"),
+    )),
+)
+```
+
+</details>
+
+<details><summary>#### AWS Secrets Manager</summary>
+
+AWS Secrets Manager loader is used to load configuration from AWS Secrets Manager.  
+This is not enabled by default.
+
+Enable AWS Secrets Manager loader importing the package.
+
+```go
+import (
+    _ "github.com/rakunlabs/chu/loader/external/loaderawssecrets"
+)
+```
+
+| Env Value            | Description                                                                                                      | Default |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- | ------- |
+| `AWS_REGION`         | AWS region; if neither this nor `AWS_DEFAULT_REGION` nor the option is set, the loader is skipped (env > option) | -       |
+| `AWS_DEFAULT_REGION` | Fallback region when `AWS_REGION` is unset                                                                       | -       |
+| `AWS_SECRETS_PREFIX` | Prefix prepended to the configuration name to build the secret id (env > option)                                 | -       |
+
+It calls `GetSecretValue` to fetch the secret payload (`SecretString`, falling back to `SecretBinary`).  
+The configuration name is used as the secret id (optionally prefixed).  
+Authentication uses the default AWS credential chain (env vars, shared config/credentials, IAM role, etc.).  
+Payload is decoded as YAML by default (JSON is a valid YAML subset).
+
+Region and prefix can also be injected programmatically. The matching env var, when set, takes priority over the option.
+
+```go
+err := chu.Load(ctx, "my-app", &cfg,
+    chu.WithLoaderOption(loaderawssecrets.New(
+        loaderawssecrets.WithRegion("eu-west-1"),
+        loaderawssecrets.WithPrefix("my-team"),
+    )),
+)
+```
+
+</details>
+
+<details><summary>#### AWS SSM Parameter Store</summary>
+
+AWS SSM Parameter Store loader is used to load configuration from AWS Systems Manager Parameter Store.  
+This is not enabled by default.
+
+Enable AWS SSM Parameter Store loader importing the package.
+
+```go
+import (
+    _ "github.com/rakunlabs/chu/loader/external/loaderawsssm"
+)
+```
+
+| Env Value            | Description                                                                                                      | Default |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- | ------- |
+| `AWS_REGION`         | AWS region; if neither this nor `AWS_DEFAULT_REGION` nor the option is set, the loader is skipped (env > option) | -       |
+| `AWS_DEFAULT_REGION` | Fallback region when `AWS_REGION` is unset                                                                       | -       |
+| `AWS_SSM_PREFIX`     | Prefix prepended to the configuration name to build the parameter name (env > option)                            | -       |
+
+It calls `GetParameter` with `WithDecryption=true` to fetch the parameter value.  
+The configuration name is used as the parameter name; when a prefix is set the name becomes `/{prefix}/{name}`.  
+Authentication uses the default AWS credential chain (env vars, shared config/credentials, IAM role, etc.).  
+Payload is decoded as YAML by default (JSON is a valid YAML subset).
+
+Region and prefix can also be injected programmatically. The matching env var, when set, takes priority over the option.
+
+```go
+err := chu.Load(ctx, "my-app", &cfg,
+    chu.WithLoaderOption(loaderawsssm.New(
+        loaderawsssm.WithRegion("eu-west-1"),
+        loaderawsssm.WithPrefix("my-team"),
+    )),
+)
+```
+
+</details>
+
+<details><summary>#### Azure Key Vault</summary>
+
+Azure Key Vault loader is used to load configuration from Azure Key Vault secrets.  
+This is not enabled by default.
+
+Enable Azure Key Vault loader importing the package.
+
+```go
+import (
+    _ "github.com/rakunlabs/chu/loader/external/loaderazurekeyvault"
+)
+```
+
+| Env Value             | Description                                                                                                                                     | Default |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `AZURE_KEYVAULT_URL`  | Key Vault URL, e.g. `https://my-vault.vault.azure.net/`; if neither this nor `AZURE_KEYVAULT_NAME` nor the option is set, the loader is skipped | -       |
+| `AZURE_KEYVAULT_NAME` | Key Vault name used to build the URL when `AZURE_KEYVAULT_URL` is unset                                                                         | -       |
+
+It calls `GetSecret` (latest version) to fetch the secret payload.  
+The configuration name is used as the secret name; `/` characters in the name are replaced with `-` because Key Vault secret names allow only alphanumeric characters and dashes.  
+Authentication uses `DefaultAzureCredential` (env vars, managed identity, Azure CLI, etc.).  
+Payload is decoded as YAML by default (JSON is a valid YAML subset).
+
+The vault URL can also be injected programmatically. The `AZURE_KEYVAULT_URL` / `AZURE_KEYVAULT_NAME` env vars, when set, take priority over the option.
+
+```go
+err := chu.Load(ctx, "my-app", &cfg,
+    chu.WithLoaderOption(loaderazurekeyvault.New(
+        loaderazurekeyvault.WithVaultURL("https://my-vault.vault.azure.net/"),
     )),
 )
 ```

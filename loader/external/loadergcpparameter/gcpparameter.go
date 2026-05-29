@@ -3,14 +3,18 @@ package loadergcpparameter
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	parametermanager "cloud.google.com/go/parametermanager/apiv1"
 	"cloud.google.com/go/parametermanager/apiv1/parametermanagerpb"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -34,6 +38,11 @@ type Loader struct {
 
 	m sync.RWMutex
 
+	// VersionFallback, when true, falls back to the most recently created
+	// enabled version if "latest" resolves to a disabled version.
+	//  - GCP_PARAMETER_FALLBACK env var takes priority over this field.
+	VersionFallback bool
+
 	// Decode for parameter payload to any
 	//  - default is yaml decoder
 	Decode func(r io.Reader, to any) error
@@ -44,9 +53,10 @@ func New(opts ...Option) loader.Loader {
 	o.apply(opts...)
 
 	return &Loader{
-		Decode:       o.Decode,
-		clientOption: o.ClientOption,
-		ProjectID:    o.ProjectID,
+		Decode:          o.Decode,
+		clientOption:    o.ClientOption,
+		ProjectID:       o.ProjectID,
+		VersionFallback: o.VersionFallback,
 	}
 }
 
@@ -128,6 +138,55 @@ func (l *Loader) LoadKey(ctx context.Context, resourceName string) ([]byte, erro
 	return resp.GetRenderedPayload(), nil
 }
 
+// latestEnabledVersion lists the versions under parent and returns the resource
+// name of the most recently created enabled (non-disabled) version.
+//
+// parent must be in the form:
+//
+//	projects/{project}/locations/{location}/parameters/{parameter}
+//
+// GCP version ids are arbitrary user-defined strings (not incrementing
+// integers), so the newest version is selected by CreateTime rather than by
+// the version id.
+func (l *Loader) latestEnabledVersion(ctx context.Context, parent string) (string, error) {
+	it := l.client.ListParameterVersions(ctx, &parametermanagerpb.ListParameterVersionsRequest{
+		Parent: parent,
+	})
+
+	var (
+		bestName    string
+		bestCreated time.Time
+		found       bool
+	)
+
+	for {
+		v, err := it.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			return "", fmt.Errorf("failed to list parameter versions [%s]: %w", parent, err)
+		}
+
+		if v.GetDisabled() {
+			continue
+		}
+
+		created := v.GetCreateTime().AsTime()
+		if !found || created.After(bestCreated) {
+			bestName = v.GetName()
+			bestCreated = created
+			found = true
+		}
+	}
+
+	if !found {
+		return "", fmt.Errorf("no enabled parameter version found [%s]", parent)
+	}
+
+	return bestName, nil
+}
+
 func (l *Loader) Load(ctx context.Context, to any, optLoader *loader.Option) error {
 	// Env takes priority over option-set ProjectID.
 	projectID := os.Getenv("GCP_PROJECT_ID")
@@ -148,6 +207,14 @@ func (l *Loader) Load(ctx context.Context, to any, optLoader *loader.Option) err
 		version = "latest"
 	}
 
+	// Env takes priority over the option-set fallback flag.
+	fallback := l.VersionFallback
+	if v := os.Getenv("GCP_PARAMETER_FALLBACK"); v != "" {
+		if b, perr := strconv.ParseBool(v); perr == nil {
+			fallback = b
+		}
+	}
+
 	if err := l.setClient(ctx, location); err != nil {
 		return err
 	}
@@ -158,14 +225,35 @@ func (l *Loader) Load(ctx context.Context, to any, optLoader *loader.Option) err
 		return fmt.Errorf("parameter name is empty: %w", loader.ErrSkipLoader)
 	}
 
-	resourceName := fmt.Sprintf(
-		"projects/%s/locations/%s/parameters/%s/versions/%s",
-		projectID, location, parameterID, version,
+	parentName := fmt.Sprintf(
+		"projects/%s/locations/%s/parameters/%s",
+		projectID, location, parameterID,
 	)
+	resourceName := fmt.Sprintf("%s/versions/%s", parentName, version)
 
 	vRaw, err := l.LoadKey(ctx, resourceName)
 	if err != nil {
-		return err
+		// Fallback only applies when using "latest" (the default), it is
+		// enabled, and the failure is not a missing-parameter skip. A disabled
+		// latest version makes RenderParameterVersion fail; in that case we
+		// render the most recently created enabled version instead.
+		if !fallback || version != "latest" || errors.Is(err, loader.ErrSkipLoader) {
+			return err
+		}
+
+		fallbackName, ferr := l.latestEnabledVersion(ctx, parentName)
+		if ferr != nil {
+			optLoader.Logger.Warn("config gcp parameter latest version unavailable and fallback failed", "name", resourceName, "error", ferr)
+
+			return err
+		}
+
+		optLoader.Logger.Warn("config gcp parameter latest version unavailable, falling back to latest enabled version", "name", resourceName, "fallback", fallbackName)
+
+		resourceName = fallbackName
+		if vRaw, err = l.LoadKey(ctx, resourceName); err != nil {
+			return err
+		}
 	}
 
 	optLoader.Logger.Info("config load gcp parameter", "name", resourceName)

@@ -6,7 +6,7 @@ replace github.com/rakunlabs/chu => ../../../
 
 require (
 	cloud.google.com/go/parametermanager v0.4.0
-	github.com/rakunlabs/chu v0.4.1
+	github.com/rakunlabs/chu v0.4.6
 	google.golang.org/api v0.273.1
 	google.golang.org/grpc v1.79.3
 )

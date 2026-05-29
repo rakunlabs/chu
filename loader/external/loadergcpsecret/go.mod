@@ -6,7 +6,7 @@ replace github.com/rakunlabs/chu => ../../../
 
 require (
 	cloud.google.com/go/secretmanager v1.15.0
-	github.com/rakunlabs/chu v0.4.1
+	github.com/rakunlabs/chu v0.4.6
 	google.golang.org/api v0.237.0
 	google.golang.org/grpc v1.73.0
 )

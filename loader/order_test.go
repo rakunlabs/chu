@@ -65,3 +65,28 @@ func Test_orderLoaders(t *testing.T) {
 		})
 	}
 }
+
+func Test_orderLoaders_canonicalChain(t *testing.T) {
+	loaders := map[LoaderName]Loader{
+		NameDefault:       testLoader{Name: NameDefault, Order: OrderDefault},
+		NameConsul:        testLoader{Name: NameConsul, Order: OrderConsul},
+		NameAWSSSM:        testLoader{Name: NameAWSSSM, Order: OrderAWSSSM},
+		NameAWSSecrets:    testLoader{Name: NameAWSSecrets, Order: OrderAWSSecrets},
+		NameAzureKeyVault: testLoader{Name: NameAzureKeyVault, Order: OrderAzureKeyVault},
+		NameVault:         testLoader{Name: NameVault, Order: OrderVault},
+		NameGCPParameter:  testLoader{Name: NameGCPParameter, Order: OrderGCPParameter},
+		NameGCPSecret:     testLoader{Name: NameGCPSecret, Order: OrderGCPSecret},
+		NameHTTP:          testLoader{Name: NameHTTP, Order: OrderHTTP},
+		NameFile:          testLoader{Name: NameFile, Order: OrderFile},
+		NameEnv:           testLoader{Name: NameEnv, Order: OrderEnv},
+	}
+
+	want := []LoaderName{
+		NameDefault, NameConsul, NameAWSSSM, NameAWSSecrets, NameAzureKeyVault,
+		NameVault, NameGCPParameter, NameGCPSecret, NameHTTP, NameFile, NameEnv,
+	}
+
+	if got := OrderLoaders(loaders); !reflect.DeepEqual(got, want) {
+		t.Errorf("OrderLoaders() = %v, want %v", got, want)
+	}
+}

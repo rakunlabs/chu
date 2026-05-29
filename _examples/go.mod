@@ -9,7 +9,7 @@ replace github.com/rakunlabs/chu/loader/external/loaderconsul => ../loader/exter
 replace github.com/rakunlabs/chu/loader/external/loadervault => ../loader/external/loadervault
 
 require (
-	github.com/rakunlabs/chu v0.4.3
+	github.com/rakunlabs/chu v0.4.6
 	github.com/rakunlabs/chu/loader/external/loaderconsul v0.0.0-00010101000000-000000000000
 	github.com/rakunlabs/chu/loader/external/loadervault v0.0.0-00010101000000-000000000000
 )
