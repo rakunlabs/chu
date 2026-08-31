@@ -19,7 +19,7 @@ type Config struct {
 	Test    int    `cfg:"test"     default:"1"`
 
 	Duration    time.Duration  `cfg:"duration"     default:"1s"`
-	DurationPtr *time.Duration `cfg:"duration_ptr" default:"2s"`
+	DurationPtr *time.Duration `cfg:"duration_ptr" default:"10d"`
 
 	// Database configuration
 	DB struct {

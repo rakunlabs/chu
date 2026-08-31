@@ -6,11 +6,14 @@ import (
 	"reflect"
 
 	"github.com/rakunlabs/chu/loader"
+	"github.com/rakunlabs/gofret"
 )
 
 type Loader struct {
-	hooks   []loader.HookFunc
-	tagName string
+	hooks        []gofret.Hook
+	codecOptions []gofret.Option
+	codec        *gofret.Codec
+	tagName      string
 }
 
 func New(opts ...Option) loader.Loader {
@@ -20,8 +23,9 @@ func New(opts ...Option) loader.Loader {
 	opt.apply(opts...)
 
 	return &Loader{
-		tagName: opt.TagName,
-		hooks:   opt.Hooks,
+		tagName:      opt.TagName,
+		hooks:        opt.Hooks,
+		codecOptions: opt.CodecOptions,
 	}
 }
 
@@ -37,6 +41,13 @@ func (l Loader) Load(ctx context.Context, to any, opt *loader.Option) error {
 	if len(opt.Hooks) > 0 {
 		l.hooks = opt.Hooks
 	}
+	if len(opt.CodecOptions) > 0 {
+		l.codecOptions = opt.CodecOptions
+	}
+
+	codecOptions := append([]gofret.Option{}, l.codecOptions...)
+	codecOptions = append(codecOptions, gofret.WithHooks(l.hooks...))
+	l.codec = gofret.New(codecOptions...)
 
 	v := reflect.ValueOf(to)
 	if v.Kind() != reflect.Ptr {
@@ -89,26 +100,6 @@ func (l *Loader) walk(ctx context.Context, v reflect.Value) error {
 }
 
 func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag *string) error {
-	// check direct exist
-	if tag != nil && len(l.hooks) > 0 {
-		var valGet any
-		var err error
-
-		for _, hook := range l.hooks {
-			valGet, err = hook(reflect.TypeFor[string](), field.Type(), *tag)
-			if err != nil {
-				return err
-			}
-		}
-
-		reflectValGet := reflect.ValueOf(valGet)
-		if reflectValGet.Type() == field.Type() {
-			field.Set(reflectValGet)
-
-			return nil
-		}
-	}
-
 	switch field.Kind() {
 	case reflect.Struct:
 		if err := l.walk(ctx, field); err != nil {
@@ -131,7 +122,7 @@ func (l *Loader) walkField(ctx context.Context, field reflect.Value, tag *string
 			return nil
 		}
 
-		return loader.AssignValue(*tag, field)
+		return l.codec.ToInto(*tag, field.Addr().Interface())
 	}
 
 	return nil

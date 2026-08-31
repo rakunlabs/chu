@@ -5,18 +5,20 @@ import (
 	"os"
 	"strings"
 
+	"github.com/rakunlabs/gofret"
 	"github.com/rakunlabs/logi/logadapter"
 )
 
 type OptionFunc func(*Option)
 
 type Option struct {
-	Tag        string
-	Name       string
-	Version    string
-	Hooks      []HookFunc
-	MapDecoder func(input any, output any) error
-	Logger     logadapter.Adapter
+	Tag          string
+	Name         string
+	Version      string
+	Hooks        []gofret.Hook
+	CodecOptions []gofret.Option
+	MapDecoder   func(input any, output any) error
+	Logger       logadapter.Adapter
 }
 
 func NewOption(opts ...OptionFunc) *Option {
@@ -57,10 +59,17 @@ func WithName(name string) OptionFunc {
 	}
 }
 
-// WithHooks sets the hooks for conversion.
-func WithHooks(hooks ...HookFunc) OptionFunc {
+// WithHooks sets the gofret hooks for conversion.
+func WithHooks(hooks ...gofret.Hook) OptionFunc {
 	return func(o *Option) {
 		o.Hooks = hooks
+	}
+}
+
+// WithCodecOptions sets the gofret codec options for conversion.
+func WithCodecOptions(opts ...gofret.Option) OptionFunc {
+	return func(o *Option) {
+		o.CodecOptions = opts
 	}
 }
 

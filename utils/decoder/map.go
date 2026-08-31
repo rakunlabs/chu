@@ -1,46 +1,47 @@
 package decoder
 
-import (
-	"github.com/rakunlabs/chu/loader"
-	"github.com/worldline-go/struct2"
-)
+import "github.com/rakunlabs/gofret"
 
 type Map struct {
-	decoder struct2.Decoder
+	codec *gofret.Codec
 }
 
 func New(opts ...Option) *Map {
 	opt := &option{
-		WeaklyTypedInput:      true,
-		WeaklyIgnoreSeperator: true,
-		WeaklyDashUnderscore:  true,
-		Tag:                   "cfg",
+		WeaklyTypedInput: true,
+		Tag:              "cfg",
 	}
 	opt.apply(opts...)
 
-	return &Map{
-		decoder: struct2.Decoder{
-			TagName:               opt.Tag,
-			HooksDecode:           opt.Hooks,
-			WeaklyTypedInput:      opt.WeaklyTypedInput,
-			WeaklyIgnoreSeperator: opt.WeaklyIgnoreSeperator,
-			WeaklyDashUnderscore:  opt.WeaklyDashUnderscore,
-		},
+	gopts := []gofret.Option{
+		gofret.WithTag(opt.Tag),
 	}
+	gopts = append(gopts, opt.CodecOptions...)
+
+	if opt.WeaklyTypedInput {
+		gopts = append(gopts, gofret.WithWeakTypes())
+	} else {
+		gopts = append(gopts, gofret.WithStrictTypes())
+	}
+
+	if len(opt.Hooks) > 0 {
+		gopts = append(gopts, gofret.WithHooks(opt.Hooks...))
+	}
+
+	return &Map{codec: gofret.New(gopts...)}
 }
 
 func (m *Map) Decode(input, output any) error {
-	return m.decoder.Decode(input, output)
+	return m.codec.ToInto(input, output)
 }
 
 type Option func(*option)
 
 type option struct {
-	Hooks                 []loader.HookFunc
-	WeaklyIgnoreSeperator bool
-	WeaklyDashUnderscore  bool
-	WeaklyTypedInput      bool
-	Tag                   string
+	Hooks            []gofret.Hook
+	CodecOptions     []gofret.Option
+	WeaklyTypedInput bool
+	Tag              string
 }
 
 func (o *option) apply(opts ...Option) {
@@ -49,26 +50,17 @@ func (o *option) apply(opts ...Option) {
 	}
 }
 
-// WithHooks sets the hooks for map to struct conversion.
-func WithHooks(hooks ...loader.HookFunc) Option {
+// WithHooks sets the gofret hooks for map to struct conversion.
+func WithHooks(hooks ...gofret.Hook) Option {
 	return func(o *option) {
 		o.Hooks = append(o.Hooks, hooks...)
 	}
 }
 
-// WithWeaklyIgnoreSeperator sets the weakly ignore separator option.
-//   - default is true
-func WithWeaklyIgnoreSeperator(v bool) Option {
+// WithCodecOptions sets the gofret codec options.
+func WithCodecOptions(opts ...gofret.Option) Option {
 	return func(o *option) {
-		o.WeaklyIgnoreSeperator = v
-	}
-}
-
-// WithWeaklyDashUnderscore sets the weakly dash underscore option.
-//   - default is true
-func WithWeaklyDashUnderscore(v bool) Option {
-	return func(o *option) {
-		o.WeaklyDashUnderscore = v
+		o.CodecOptions = append(o.CodecOptions, opts...)
 	}
 }
 

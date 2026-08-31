@@ -176,6 +176,8 @@ github.com/prometheus/common v0.9.1/go.mod h1:yhUN8i9wzaXS3w1O07YhxHEBxD+W35wd8b
 github.com/prometheus/procfs v0.0.0-20181005140218-185b4288413d/go.mod h1:c3At6R/oaqEKCNdg8wHV1ftS6bRYblBhIjjI8uT2IGk=
 github.com/prometheus/procfs v0.0.2/go.mod h1:TjEm7ze935MbeOT/UhFTIMYKhuLP4wbCsTZCD3I8kEA=
 github.com/prometheus/procfs v0.0.8/go.mod h1:7Qr8sr6344vo1JqZ6HhLceV9o3AJ1Ff+GxbHq6oeK9A=
+github.com/rakunlabs/gofret v0.2.1 h1:fuwBOMKKAvDtynb44P6NWXNShFLanF0g0RxdJRYYMEA=
+github.com/rakunlabs/gofret v0.2.1/go.mod h1:HCXaheJp8j+a3siZZtJNupkAOs8HaeZDfkxT5g7Mlks=
 github.com/rakunlabs/logi v0.4.1 h1:7P60OishtLpQh24V5R2oI1udHLWIi0ivg45Yuc7tBcU=
 github.com/rakunlabs/logi v0.4.1/go.mod h1:lx+Tkgygd4KSEwgZaJquM05ePlArP9sEBCY6YHcRGVU=
 github.com/rakunlabs/ok v0.1.0 h1:rzzhj3iclFMqRPN0H0Y/3cxJe7VbVviwDmbTIPEkrkk=
@@ -204,8 +206,6 @@ github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/twmb/tlscfg v1.3.0 h1:FrRQp4vCyw17ged/cvN54+Ls6mbV/u+NqHZH/II9Gkw=
 github.com/twmb/tlscfg v1.3.0/go.mod h1:CoNV7wFGrzBgm3IM4QYWgnRPcOIsQaeWwGwSjv7opms=
-github.com/worldline-go/struct2 v1.4.0 h1:81QtMoOyux9aVXjPeqaDPJQVb3y/akSWm0AjNjK7U2w=
-github.com/worldline-go/struct2 v1.4.0/go.mod h1:WQ0q9deNrhnzWkWvrC1sIYc6SfziRsRCAwQBgS94T8E=
 github.com/xhit/go-str2duration/v2 v2.1.0 h1:lxklc02Drh6ynqX+DdPyp5pCKLUQpRT8bp8Ydu2Bstc=
 github.com/xhit/go-str2duration/v2 v2.1.0/go.mod h1:ohY8p+0f07DiV6Em5LKB0s2YpLtXVyJfNt1+BlmyAsU=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=

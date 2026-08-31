@@ -1,11 +1,12 @@
 package loaderenv
 
-import "github.com/rakunlabs/chu/loader"
+import "github.com/rakunlabs/gofret"
 
 type Option func(*option)
 
 type option struct {
-	Hooks              []loader.HookFunc
+	Hooks              []gofret.Hook
+	CodecOptions       []gofret.Option
 	EnvHolder          envHolder
 	CheckConfigEnvFile bool
 	EnvFiles           []string
@@ -20,11 +21,17 @@ func (o *option) apply(opts ...Option) {
 	}
 }
 
-// WithHooks sets the hooks for the environment loader.
-//   - if return type matches the field type, return value is assigned to the field
-func WithHooks(hooks ...loader.HookFunc) Option {
+// WithHooks sets the gofret conversion hooks for the environment loader.
+func WithHooks(hooks ...gofret.Hook) Option {
 	return func(o *option) {
 		o.Hooks = hooks
+	}
+}
+
+// WithCodecOptions sets the gofret codec options for the environment loader.
+func WithCodecOptions(opts ...gofret.Option) Option {
+	return func(o *option) {
+		o.CodecOptions = opts
 	}
 }
 

@@ -149,6 +149,7 @@ func (l *Loader) Load(ctx context.Context, to any, opt *loader.Option) error {
 		mapDecoder = decoder.New(
 			decoder.WithTag(opt.Tag),
 			decoder.WithHooks(opt.Hooks...),
+			decoder.WithCodecOptions(opt.CodecOptions...),
 		).Decode
 	}
 

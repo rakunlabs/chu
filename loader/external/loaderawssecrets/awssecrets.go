@@ -180,6 +180,7 @@ func (l *Loader) Load(ctx context.Context, to any, optLoader *loader.Option) err
 		mapDecoder = decoder.New(
 			decoder.WithTag(optLoader.Tag),
 			decoder.WithHooks(optLoader.Hooks...),
+			decoder.WithCodecOptions(optLoader.CodecOptions...),
 		).Decode
 	}
 

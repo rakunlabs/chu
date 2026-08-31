@@ -11,6 +11,8 @@ import (
 
 	"github.com/rakunlabs/chu/loader"
 	"github.com/rakunlabs/chu/utils/decoder"
+	"github.com/rakunlabs/gofret"
+	"github.com/xhit/go-str2duration/v2"
 
 	// Enable default loaders.
 
@@ -21,39 +23,38 @@ import (
 )
 
 var (
-	DefaultLoaders = loader.Loaders
-	DefaultHooks   = []loader.HookFunc{
-		loader.HookTimeDuration,
+	DefaultLoaders      = loader.Loaders
+	DefaultHooks        = []gofret.Hook{}
+	DefaultCodecOptions = []gofret.Option{
+		gofret.Between(str2duration.ParseDuration),
 	}
 	DefaultOptions = []Option{}
 )
 
 // Load loads the configuration from loaders.
 //   - default loaders are [defaultx, file, env].
-//   - default hooks are [loader.HookTimeDuration].
 func Load(ctx context.Context, name string, to any, opts ...Option) error {
 	opts = append(DefaultOptions, opts...)
 
 	opt := option{
-		Loaders:               DefaultLoaders,
-		Hooks:                 DefaultHooks,
-		Tag:                   "cfg",
-		WeaklyIgnoreSeperator: true,
-		WeaklyDashUnderscore:  false,
-		Logger:                slog.Default(),
+		Loaders:      DefaultLoaders,
+		Hooks:        DefaultHooks,
+		CodecOptions: append([]gofret.Option{}, DefaultCodecOptions...),
+		Tag:          "cfg",
+		Logger:       slog.Default(),
 	}
 	opt.apply(opts...)
 
 	mapDecoder := decoder.New(
 		decoder.WithTag(opt.Tag),
 		decoder.WithHooks(opt.Hooks...),
-		decoder.WithWeaklyIgnoreSeperator(opt.WeaklyIgnoreSeperator),
-		decoder.WithWeaklyDashUnderscore(opt.WeaklyDashUnderscore),
+		decoder.WithCodecOptions(opt.CodecOptions...),
 	).Decode
 
 	optLoader := loader.NewOption(
 		loader.WithName(name),
 		loader.WithHooks(opt.Hooks...),
+		loader.WithCodecOptions(opt.CodecOptions...),
 		loader.WithTag(opt.Tag),
 		loader.WithMapDecoder(mapDecoder),
 		loader.WithLogger(opt.Logger),

@@ -1,12 +1,12 @@
 module github.com/rakunlabs/chu/loader/external/loadervault
 
-go 1.25
+go 1.27
 
 replace github.com/rakunlabs/chu => ../../../
 
 require (
 	github.com/hashicorp/vault/api v1.22.0
-	github.com/rakunlabs/chu v0.4.7
+	github.com/rakunlabs/chu v0.5.0
 )
 
 require (
@@ -25,11 +25,9 @@ require (
 	github.com/hashicorp/hcl v1.0.1-vault-7 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/rakunlabs/gofret v0.2.1 // indirect
 	github.com/rakunlabs/logi v0.4.1 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
-	github.com/spf13/cast v1.10.0 // indirect
-	github.com/worldline-go/struct2 v1.4.0 // indirect
-	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/text v0.27.0 // indirect

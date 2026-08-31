@@ -3,7 +3,6 @@
 [![License](https://img.shields.io/github/license/rakunlabs/chu?color=red&style=flat-square)](https://raw.githubusercontent.com/rakunlabs/chu/main/LICENSE)
 [![Coverage](https://img.shields.io/sonar/coverage/rakunlabs_chu?logo=sonarcloud&server=https%3A%2F%2Fsonarcloud.io&style=flat-square)](https://sonarcloud.io/summary/overall?id=rakunlabs_chu)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/rakunlabs/chu/test.yml?branch=main&logo=github&style=flat-square&label=ci)](https://github.com/rakunlabs/chu/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/rakunlabs/chu?style=flat-square)](https://goreportcard.com/report/github.com/rakunlabs/chu)
 [![Go PKG](https://raw.githubusercontent.com/rakunlabs/.github/main/assets/badges/gopkg.svg)](https://pkg.go.dev/github.com/rakunlabs/chu)
 
 Configuration library to load from multiple sources.

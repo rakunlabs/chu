@@ -1,6 +1,7 @@
 package chu
 
 import (
+	"github.com/rakunlabs/gofret"
 	"github.com/rakunlabs/logi/logadapter"
 
 	"github.com/rakunlabs/chu/loader"
@@ -9,16 +10,10 @@ import (
 type Option func(*option)
 
 type option struct {
-	Loaders map[loader.LoaderName]loader.Loader
-	Hooks   []loader.HookFunc
-	Tag     string
-	// WeaklyIgnoreSeperator for map decoder option.
-	//  - default is true
-	//  - if true, ignore separator in map keys [-_ ]; "key1-key2" -> "key1key2"
-	WeaklyIgnoreSeperator bool
-	// WeaklyDashUnderscore for map decoder option.
-	//  - default is false
-	WeaklyDashUnderscore bool
+	Loaders      map[loader.LoaderName]loader.Loader
+	Hooks        []gofret.Hook
+	CodecOptions []gofret.Option
+	Tag          string
 	// Logger for logging.
 	Logger logadapter.Adapter
 	// Version of the application, used by some loaders (e.g. http loader as `version` query).
@@ -51,17 +46,24 @@ func WithLoaderOption(ld loader.Loader) Option {
 	}
 }
 
-// WithHookSet sets the hooks for conversion.
-func WithHookSet(hooks ...loader.HookFunc) Option {
+// WithHookSet sets the gofret hooks for conversion.
+func WithHookSet(hooks ...gofret.Hook) Option {
 	return func(o *option) {
 		o.Hooks = hooks
 	}
 }
 
-// WithHook adds hooks for conversion.
-func WithHook(hooks ...loader.HookFunc) Option {
+// WithHook adds gofret hooks for conversion.
+func WithHook(hooks ...gofret.Hook) Option {
 	return func(o *option) {
 		o.Hooks = append(o.Hooks, hooks...)
+	}
+}
+
+// WithCodecOptions adds gofret codec options for conversion.
+func WithCodecOptions(opts ...gofret.Option) Option {
+	return func(o *option) {
+		o.CodecOptions = append(o.CodecOptions, opts...)
 	}
 }
 
@@ -70,22 +72,6 @@ func WithHook(hooks ...loader.HookFunc) Option {
 func WithTag(tag string) Option {
 	return func(o *option) {
 		o.Tag = tag
-	}
-}
-
-// WithWeaklyIgnoreSeperator sets the weakly ignore separator option.
-//   - default is true
-func WithWeaklyIgnoreSeperator(v bool) Option {
-	return func(o *option) {
-		o.WeaklyIgnoreSeperator = v
-	}
-}
-
-// WithWeaklyDashUnderscore sets the weakly dash underscore option.
-//   - default is false
-func WithWeaklyDashUnderscore(v bool) Option {
-	return func(o *option) {
-		o.WeaklyDashUnderscore = v
 	}
 }
 

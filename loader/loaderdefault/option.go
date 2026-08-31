@@ -1,12 +1,13 @@
 package loaderdefault
 
-import "github.com/rakunlabs/chu/loader"
+import "github.com/rakunlabs/gofret"
 
 type Option func(*option)
 
 type option struct {
-	Hooks   []loader.HookFunc
-	TagName string
+	Hooks        []gofret.Hook
+	CodecOptions []gofret.Option
+	TagName      string
 }
 
 func (o *option) apply(opts ...Option) {
@@ -15,11 +16,17 @@ func (o *option) apply(opts ...Option) {
 	}
 }
 
-// WithHooks sets the hooks for the environment loader.
-//   - if return type matches the field type, return value is assigned to the field
-func WithHooks(hooks ...loader.HookFunc) Option {
+// WithHooks sets the gofret conversion hooks for the default loader.
+func WithHooks(hooks ...gofret.Hook) Option {
 	return func(o *option) {
 		o.Hooks = hooks
+	}
+}
+
+// WithCodecOptions sets the gofret codec options for the default loader.
+func WithCodecOptions(opts ...gofret.Option) Option {
+	return func(o *option) {
+		o.CodecOptions = opts
 	}
 }
 

@@ -1,12 +1,12 @@
 module github.com/rakunlabs/chu/loader/external/loaderconsul
 
-go 1.25.3
+go 1.27
 
 replace github.com/rakunlabs/chu => ../../../
 
 require (
 	github.com/hashicorp/consul/api v1.33.0
-	github.com/rakunlabs/chu v0.4.7
+	github.com/rakunlabs/chu v0.5.0
 )
 
 require (
@@ -26,10 +26,8 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/rakunlabs/gofret v0.2.1 // indirect
 	github.com/rakunlabs/logi v0.4.1 // indirect
-	github.com/spf13/cast v1.10.0 // indirect
-	github.com/worldline-go/struct2 v1.4.0 // indirect
-	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/exp v0.0.0-20250808145144-a408d31f581a // indirect
 	golang.org/x/sys v0.37.0 // indirect
 )

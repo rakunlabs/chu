@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/rakunlabs/chu/loader"
+	"github.com/rakunlabs/gofret"
+	"github.com/xhit/go-str2duration/v2"
 )
 
 func TestLoader_Load(t *testing.T) {
@@ -32,7 +34,7 @@ func TestLoader_Load(t *testing.T) {
 					Defined: "defined",
 				},
 				opts: []loader.OptionFunc{
-					loader.WithHooks(loader.HookTimeDuration),
+					loader.WithCodecOptions(gofret.Between(str2duration.ParseDuration)),
 				},
 			},
 			want: &struct {

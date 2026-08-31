@@ -1,6 +1,6 @@
 module github.com/rakunlabs/chu/loader/external/loaderazurekeyvault
 
-go 1.25.3
+go 1.27
 
 replace github.com/rakunlabs/chu => ../../../
 
@@ -8,7 +8,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
 	github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets v1.5.0
-	github.com/rakunlabs/chu v0.4.7
+	github.com/rakunlabs/chu v0.5.0
 )
 
 require (
@@ -21,10 +21,8 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
+	github.com/rakunlabs/gofret v0.2.1 // indirect
 	github.com/rakunlabs/logi v0.4.1 // indirect
-	github.com/spf13/cast v1.10.0 // indirect
-	github.com/worldline-go/struct2 v1.4.0 // indirect
-	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/net v0.53.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect

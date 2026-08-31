@@ -6,7 +6,7 @@ test: ## Run tests
 
 .PHONY: example
 example: ## Run example
-	@go run example/main.go $(ARGS)
+	@cd _examples && go run main.go $(ARGS)
 
 .PHONY: help
 help: ## Display this help screen

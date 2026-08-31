@@ -9,16 +9,19 @@ import (
 	"strings"
 
 	"github.com/rakunlabs/chu/loader"
+	"github.com/rakunlabs/gofret"
 	"github.com/spf13/cast"
 )
 
 type Loader struct {
-	tagEnv    string
-	tag       string
-	envValues envHolder
-	hooks     []loader.HookFunc
-	envFiles  []string
-	prefix    string
+	tagEnv       string
+	tag          string
+	envValues    envHolder
+	hooks        []gofret.Hook
+	codecOptions []gofret.Option
+	codec        *gofret.Codec
+	envFiles     []string
+	prefix       string
 
 	envLoaded envHolder
 	// envRaw holds unprefixed (raw) env vars for noprefix fallback lookups.
@@ -42,12 +45,13 @@ func New(opts ...Option) loader.Loader {
 	}
 
 	return &Loader{
-		envValues: opt.EnvHolder,
-		hooks:     opt.Hooks,
-		tagEnv:    opt.TagEnv,
-		tag:       opt.Tag,
-		envFiles:  opt.EnvFiles,
-		prefix:    opt.Prefix,
+		envValues:    opt.EnvHolder,
+		hooks:        opt.Hooks,
+		codecOptions: opt.CodecOptions,
+		tagEnv:       opt.TagEnv,
+		tag:          opt.Tag,
+		envFiles:     opt.EnvFiles,
+		prefix:       opt.Prefix,
 	}
 }
 
@@ -66,6 +70,13 @@ func (l Loader) Load(ctx context.Context, to any, opt *loader.Option) error {
 	if len(opt.Hooks) > 0 {
 		l.hooks = opt.Hooks
 	}
+	if len(opt.CodecOptions) > 0 {
+		l.codecOptions = opt.CodecOptions
+	}
+
+	codecOptions := append([]gofret.Option{}, l.codecOptions...)
+	codecOptions = append(codecOptions, gofret.WithHooks(l.hooks...))
+	l.codec = gofret.New(codecOptions...)
 
 	if opt.Tag != "" {
 		l.tag = opt.Tag
@@ -242,25 +253,6 @@ func (l *Loader) walkFieldFrom(ctx context.Context, field reflect.Value, tag str
 		return nil
 	}
 
-	// check direct exist
-	if value, ok := env[tag]; ok && len(l.hooks) > 0 {
-		var valGet any
-		var err error
-
-		for _, hook := range l.hooks {
-			valGet, err = hook(reflect.TypeFor[string](), field.Type(), value)
-			if err != nil {
-				return err
-			}
-		}
-
-		reflectValGet := reflect.ValueOf(valGet)
-		if reflectValGet.Type() == field.Type() {
-			field.Set(reflectValGet)
-			return nil
-		}
-	}
-
 	switch field.Kind() {
 	case reflect.Struct:
 		if err := l.walk(ctx, field, tag+"_", noprefix); err != nil {
@@ -372,7 +364,7 @@ func (l *Loader) walkFieldFrom(ctx context.Context, field reflect.Value, tag str
 			return nil
 		}
 
-		return loader.AssignValue(value, field)
+		return l.codec.ToInto(value, field.Addr().Interface())
 	}
 
 	return nil

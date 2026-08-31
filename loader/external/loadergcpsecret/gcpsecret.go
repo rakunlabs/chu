@@ -211,6 +211,7 @@ func (l *Loader) loadAndDecode(ctx context.Context, resourceName string, to any,
 		mapDecoder = decoder.New(
 			decoder.WithTag(optLoader.Tag),
 			decoder.WithHooks(optLoader.Hooks...),
+			decoder.WithCodecOptions(optLoader.CodecOptions...),
 		).Decode
 	}
 

@@ -1,12 +1,12 @@
 module github.com/rakunlabs/chu/loader/external/loadergcpparameter
 
-go 1.25.3
+go 1.27
 
 replace github.com/rakunlabs/chu => ../../../
 
 require (
 	cloud.google.com/go/parametermanager v0.4.0
-	github.com/rakunlabs/chu v0.4.7
+	github.com/rakunlabs/chu v0.5.0
 	google.golang.org/api v0.273.1
 	google.golang.org/grpc v1.79.3
 )
@@ -25,10 +25,8 @@ require (
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.14 // indirect
 	github.com/googleapis/gax-go/v2 v2.20.0 // indirect
+	github.com/rakunlabs/gofret v0.2.1 // indirect
 	github.com/rakunlabs/logi v0.4.1 // indirect
-	github.com/spf13/cast v1.10.0 // indirect
-	github.com/worldline-go/struct2 v1.4.0 // indirect
-	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.61.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.61.0 // indirect

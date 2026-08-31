@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rakunlabs/chu/loader"
+	"github.com/rakunlabs/gofret"
 )
 
 // Types for embedded struct tests - defined at package level to ensure type identity
@@ -352,9 +353,9 @@ func TestLoad(t *testing.T) {
 					Duration time.Duration `cfg:"duration"`
 				}{},
 				opts: []Option{
-					WithHooks(func(input, output reflect.Type, data interface{}) (interface{}, error) {
-						if input.Kind() == reflect.String && output == reflect.TypeFor[time.Duration]() {
-							d, err := time.ParseDuration(data.(string))
+					WithHooks(func(ctx gofret.HookCtx) (any, error) {
+						if ctx.From.Kind() == reflect.String && ctx.To == reflect.TypeFor[time.Duration]() {
+							d, err := time.ParseDuration(ctx.Data().(string))
 							if err != nil {
 								return nil, err
 							}
@@ -362,7 +363,7 @@ func TestLoad(t *testing.T) {
 							return d, nil
 						}
 
-						return data, nil
+						return nil, gofret.ErrSkip
 					}),
 				},
 			},

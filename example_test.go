@@ -19,7 +19,7 @@ func ExampleLoad() {
 
 	_ = os.Setenv("MY_APP_NAME", "another")
 	_ = os.Setenv("MY_APP_AGE", "70")
-	_ = os.Setenv("MY_APP_DURATION", "1h30m")
+	_ = os.Setenv("MY_APP_DURATION", "2d")
 
 	err := chu.Load(context.Background(), "my-app", &cfg, chu.WithLoaderOption(loaderenv.New(loaderenv.WithPrefix("MY_APP_"))))
 	if err != nil {
@@ -29,5 +29,5 @@ func ExampleLoad() {
 
 	fmt.Printf("%s\n", chu.MarshalJSON(cfg))
 	// Output:
-	// {"age":70,"duration":"1h30m0s","name":"another"}
+	// {"age":70,"duration":"48h0m0s","name":"another"}
 }
